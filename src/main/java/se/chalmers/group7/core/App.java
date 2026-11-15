@@ -14,23 +14,23 @@ import se.chalmers.group7.core.tools.Tool;
 
 public class App {
 
-  private int width;
-  private int height;
+  private final int width;
+  private final int height;
 
   private Tool selectedTool;
 
-  private RaylibCanvas selectedLayer;
+  private final RaylibCanvas selectedLayer;
 
-  private RenderTexture compositeTexture;
+  private final RenderTexture compositeTexture;
 
-  private PreviewManager previewManager;
-  private RaylibCanvas previewLayer;
+  private final PreviewManager previewManager;
+  private final RaylibCanvas previewLayer;
 
   private boolean mouseDown = false;
 
   private Vector2 previousMousePosition = Vector2Zero();
 
-  private OperationManager operationManager = new OperationManager();
+  private final OperationManager operationManager = new OperationManager();
 
   private final Tool[] tools;
 

@@ -2,7 +2,7 @@ package se.chalmers.group7.core.operations;
 
 public class OperationNode {
   private final Operation operation;
-  private final OperationNode previous;
+  private OperationNode previous;
   private OperationNode next;
 
   public OperationNode(OperationNode previous, Operation operation) {
@@ -20,6 +20,10 @@ public class OperationNode {
 
   public void setNext(OperationNode next) {
     this.next = next;
+  }
+
+  public void setPrevious(OperationNode previous) {
+    this.previous = previous;
   }
 
   public boolean getExecuted() {

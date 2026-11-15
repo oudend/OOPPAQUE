@@ -30,8 +30,6 @@ public class App {
 
   private Vector2 previousMousePosition = Vector2Zero();
 
-  private Texture transparencyPatternTexture;
-
   private OperationManager operationManager = new OperationManager();
 
   private final Tool[] tools;
@@ -41,7 +39,7 @@ public class App {
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
-    SetTargetFPS(60);
+    SetTargetFPS(6000);
 
     selectedLayer = new RaylibCanvas(this.width, this.height);
 
@@ -60,16 +58,24 @@ public class App {
 
     compositeTexture = LoadRenderTexture(this.width, this.height);
 
-    RenderTexture transparencyPattern = LoadRenderTexture(20, 20);
+    createTransparencyPattern();
+  }
+
+  private RenderTexture transparencyPattern;
+
+  private void createTransparencyPattern() {
+    transparencyPattern = LoadRenderTexture(20, 20);
 
     BeginTextureMode(transparencyPattern);
+
+    ClearBackground(BLANK);
+
     DrawRectangle(0, 0, 10, 10, GRAY);
     DrawRectangle(10, 10, 10, 10, GRAY);
+
     EndTextureMode();
 
-    transparencyPatternTexture = transparencyPattern.texture();
-
-    SetTextureWrap(transparencyPatternTexture, TEXTURE_WRAP_REPEAT);
+    SetTextureWrap(transparencyPattern.texture(), TEXTURE_WRAP_REPEAT);
   }
 
   private void renderComposite() {
@@ -111,35 +117,31 @@ public class App {
       // anyway.
 
       // Renders transparent pattern
+      applyBlendMode(BlendingMode.NORMAL);
       DrawTexturePro(
-          transparencyPatternTexture,
+          transparencyPattern.texture(),
           new Rectangle().x(0).y(0).width(width / 20.0f * 15.0f).height(height / 20.0f * 15.0f),
           new Rectangle().x(0).y(0).width(width).height(height),
           Vector2Zero(),
           0,
           WHITE);
+      EndBlendMode();
 
-      renderComposite();
+      if (IsKeyDown(KEY_M)) {
+        rlCheckErrors();
+      }
 
-      // renders the RaylibCanvas selectedLayer
-      //      Rectangle rect =
-      //          new Rectangle()
-      //              .x(0.0f)
-      //              .y(0.0f)
-      //              .width((float) selectedLayer.getWidth())
-      //              .height((float) -selectedLayer.getHeight());
-      //      DrawTextureRec(selectedLayer.getTexture(), rect, Vector2Zero(), WHITE);
-      //
-      //      // renders the preview canvas
-      //      Rectangle rect2 =
-      //              new Rectangle()
-      //                      .x(0.0f)
-      //                      .y(0.0f)
-      //                      .width((float) previewLayer.getWidth())
-      //                      .height((float) -previewLayer.getHeight());
-      //      applyBlendMode(previewManager.getPreviewBlending());
-      //      DrawTextureRec(previewLayer.getTexture(), rect2, Vector2Zero(), WHITE);
-      //      EndBlendMode();
+      if (!IsKeyDown(KEY_K)) renderComposite();
+
+      if (IsKeyDown(KEY_M)) {
+        System.out.println(IsTextureValid(transparencyPattern.texture()));
+
+        rlCheckErrors();
+      }
+
+      DrawFPS(20, 20);
+
+      EndDrawing();
 
       Vector2 mousePosition = GetMousePosition();
 
@@ -171,8 +173,6 @@ public class App {
       if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
         operationManager.redo();
       }
-
-      EndDrawing();
     }
   }
 }

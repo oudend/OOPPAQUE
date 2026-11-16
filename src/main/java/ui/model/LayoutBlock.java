@@ -15,7 +15,7 @@ public abstract class LayoutBlock implements Actionable {
 
   public void evaluateInput(Input input) {
     for (Action a : actions) {
-      a.excecuteAction(input.enterArea(xPos, yPos));
+      a.executeAction(input.enterArea(xPos, yPos));
     }
   }
 

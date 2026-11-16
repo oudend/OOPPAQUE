@@ -1,5 +1,8 @@
 package ui.model;
 
+import static com.raylib.Raylib.*;
+
+import com.raylib.Raylib.*;
 import java.util.List;
 import ui.controller.Input;
 
@@ -67,5 +70,32 @@ public class BoxBlock extends LayoutBlock {
       return block.getYPos();
     }
     return -1;
+  }
+
+  public void draw(int xPos, int yPos) {
+    int topLeftX = xPos + properties.getMarginX();
+    int topLeftY = yPos + properties.getMarginY();
+    int width = this.width - 2 * properties.getMarginX();
+    int height = this.height - 2 * properties.getMarginY();
+
+    DrawRectangle(topLeftX, topLeftY, width, height, properties.getColor());
+    DrawRectangleLinesEx(
+        new Rectangle().x(topLeftX).y(topLeftY).width(width).height(height),
+        properties.getBorderSize(),
+        properties.getBorderColor());
+
+    int position = (properties.getDirection() == Direction.row) ? topLeftX : topLeftY;
+    for (LayoutBlock c : children) {
+      int size = (properties.getDirection() == Direction.row) ? c.getWidth() : c.getHeight();
+
+      int x = (properties.getDirection() == Direction.row) ? position : topLeftX;
+      int y = (properties.getDirection() == Direction.row) ? topLeftY : position;
+
+      BeginScissorMode(x, y, c.getWidth(), c.getHeight());
+      c.draw(x, y);
+      EndScissorMode();
+
+      position += size;
+    }
   }
 }

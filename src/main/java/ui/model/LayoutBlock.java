@@ -50,4 +50,10 @@ public abstract class LayoutBlock implements Actionable {
   public int getYPos() {
     return yPos;
   }
+
+  public void draw() {
+    draw(0, 0);
+  }
+
+  public abstract void draw(int xPos, int yPos);
 }

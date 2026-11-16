@@ -14,6 +14,16 @@ public class LayoutLayer {
   RenderTexture canvas;
   LayoutBlock root;
 
+  public LayoutLayer(LayoutBlock root, int xPos, int yPos, int width, int height) {
+    this.xPos = xPos;
+    this.yPos = yPos;
+    this.width = width;
+    this.height = height;
+
+    this.canvas = LoadRenderTexture(width, height);
+    this.root = root;
+  }
+
   public void draw() {
     BeginTextureMode(canvas);
     root.draw();

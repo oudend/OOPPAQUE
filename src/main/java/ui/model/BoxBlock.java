@@ -1,8 +1,10 @@
 package ui.model;
 
+import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
 import com.raylib.Raylib.*;
+import java.util.ArrayList;
 import java.util.List;
 import ui.controller.Input;
 
@@ -10,8 +12,16 @@ public class BoxBlock extends LayoutBlock {
   List<LayoutBlock> children;
   BoxProperties properties;
 
-  public BoxBlock(BoxProperties properties) {
+  public BoxBlock(BoxProperties properties, int width, int height, int xPos, int yPos) {
+    super();
+
+    children = new ArrayList<>();
     this.properties = properties;
+    this.width = width;
+    this.height = height;
+    this.actions = new ArrayList<>();
+    this.xPos = xPos;
+    this.yPos = yPos;
   }
 
   @Override
@@ -83,6 +93,7 @@ public class BoxBlock extends LayoutBlock {
     int height = this.height - 2 * properties.getMarginY();
 
     DrawRectangle(topLeftX, topLeftY, width, height, properties.getColor());
+
     DrawRectangleLinesEx(
         new Rectangle().x(topLeftX).y(topLeftY).width(width).height(height),
         properties.getBorderSize(),

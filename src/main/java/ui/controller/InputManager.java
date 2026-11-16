@@ -26,16 +26,16 @@ public class InputManager {
         mouseDelta.x(),
         mouseDelta.y(),
         new mouseButton(
-            IsMouseButtonDown(MOUSE_BUTTON_LEFT),
             IsMouseButtonPressed(MOUSE_BUTTON_LEFT),
+            IsMouseButtonDown(MOUSE_BUTTON_LEFT),
             IsMouseButtonReleased(MOUSE_BUTTON_LEFT)),
         new mouseButton(
-            IsMouseButtonDown(MOUSE_BUTTON_RIGHT),
             IsMouseButtonPressed(MOUSE_BUTTON_RIGHT),
+            IsMouseButtonDown(MOUSE_BUTTON_RIGHT),
             IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)),
         new mouseButton(
-            IsMouseButtonDown(MOUSE_BUTTON_MIDDLE),
             IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE),
+            IsMouseButtonDown(MOUSE_BUTTON_MIDDLE),
             IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE)));
   }
 }

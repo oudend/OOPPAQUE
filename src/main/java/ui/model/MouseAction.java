@@ -35,21 +35,21 @@ public abstract class MouseAction implements Action {
     }
   }
 
-  void onMouseLeftDown() {}
+  protected void onMouseLeftDown() {}
 
-  void onMouseRightDown() {}
+  protected void onMouseRightDown() {}
 
-  void onMouseMiddleDown() {}
+  protected void onMouseMiddleDown() {}
 
-  void onMouseLeftHold() {}
+  protected void onMouseLeftHold() {}
 
-  void onMouseRightHold() {}
+  protected void onMouseRightHold() {}
 
-  void onMouseMiddleHold() {}
+  protected void onMouseMiddleHold() {}
 
-  void onMouseLeftUp() {}
+  protected void onMouseLeftUp() {}
 
-  void onMouseRightUp() {}
+  protected void onMouseRightUp() {}
 
-  void onMouseMiddleUp() {}
+  protected void onMouseMiddleUp() {}
 }

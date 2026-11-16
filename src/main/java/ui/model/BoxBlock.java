@@ -10,6 +10,10 @@ public class BoxBlock extends LayoutBlock {
   List<LayoutBlock> children;
   BoxProperties properties;
 
+  public BoxBlock(BoxProperties properties) {
+    this.properties = properties;
+  }
+
   @Override
   public void evaluateInput(Input input) {
     if (input.xPos() < properties.getMarginX()
@@ -106,5 +110,13 @@ public class BoxBlock extends LayoutBlock {
 
       position += size;
     }
+  }
+
+  public void addChild(LayoutBlock child) {
+    children.add(child);
+  }
+
+  public void removeChild(LayoutBlock child) {
+    children.remove(child);
   }
 }

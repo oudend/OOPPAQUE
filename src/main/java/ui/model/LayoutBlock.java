@@ -1,44 +1,53 @@
 package ui.model;
 
+import java.util.List;
 import ui.controller.Input;
 
-import java.util.List;
-
 public abstract class LayoutBlock implements Actionable {
-    int width;
-    int height;
-    int desiredWidth;
-    int desiredHeight;
+  int xPos;
+  int yPos;
+  int width;
+  int height;
+  int desiredWidth;
+  int desiredHeight;
 
-    List<Action> actions;
+  List<Action> actions;
 
-    public void evaluateInput(Input input) {
-        for (Action a : actions) {
-            a.excecuteAction(input);
-        }
+  public void evaluateInput(Input input) {
+    for (Action a : actions) {
+      a.excecuteAction(input.enterArea(xPos, yPos));
     }
+  }
 
-    public void addAction(Action action) {
-        actions.add(action);
-    }
+  public void addAction(Action action) {
+    actions.add(action);
+  }
 
-    public void removeAction(Action action) {
-        actions.remove(action);
-    }
+  public void removeAction(Action action) {
+    actions.remove(action);
+  }
 
-    public int getWidth() {
-        return width;
-    }
+  public int getWidth() {
+    return width;
+  }
 
-    public int getHeight() {
-        return height;
-    }
+  public int getHeight() {
+    return height;
+  }
 
-    public int getDesiredWidth() {
-        return desiredWidth;
-    }
+  public int getDesiredWidth() {
+    return desiredWidth;
+  }
 
-    public int getDesiredHeight() {
-        return desiredHeight;
-    }
+  public int getDesiredHeight() {
+    return desiredHeight;
+  }
+
+  public int getXPos() {
+    return xPos;
+  }
+
+  public int getYPos() {
+    return yPos;
+  }
 }

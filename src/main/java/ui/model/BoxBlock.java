@@ -84,6 +84,11 @@ public class BoxBlock extends LayoutBlock {
         properties.getBorderSize(),
         properties.getBorderColor());
 
+    topLeftX += properties.getPaddingX();
+    width -= properties.getPaddingX();
+    topLeftY += properties.getPaddingY();
+    height -= properties.getPaddingY();
+
     int position = (properties.getDirection() == Direction.row) ? topLeftX : topLeftY;
     for (LayoutBlock c : children) {
       int size = (properties.getDirection() == Direction.row) ? c.getWidth() : c.getHeight();
@@ -91,7 +96,11 @@ public class BoxBlock extends LayoutBlock {
       int x = (properties.getDirection() == Direction.row) ? position : topLeftX;
       int y = (properties.getDirection() == Direction.row) ? topLeftY : position;
 
-      BeginScissorMode(x, y, c.getWidth(), c.getHeight());
+      BeginScissorMode(
+          x,
+          y,
+          Math.min(c.getWidth(), Math.max(0, topLeftX + width - x)),
+          Math.min(c.getHeight(), Math.max(0, topLeftY + height - y)));
       c.draw(x, y);
       EndScissorMode();
 

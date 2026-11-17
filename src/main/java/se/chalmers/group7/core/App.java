@@ -15,6 +15,7 @@ import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerRenderer;
 import se.chalmers.group7.core.tools.Brush;
 import se.chalmers.group7.core.tools.Eraser;
+import se.chalmers.group7.core.tools.PanningTool;
 import se.chalmers.group7.core.tools.Tool;
 
 public class App {
@@ -42,7 +43,7 @@ public class App {
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
-    SetTargetFPS(6000);
+    SetTargetFPS(60);
 
     layerManager = new LayerManager();
 
@@ -59,7 +60,8 @@ public class App {
     tools =
         new Tool[] {
           new Brush(layerManager, previewManager, operationManager, camera, 20),
-          new Eraser(layerManager, previewManager, operationManager, camera, 20)
+          new Eraser(layerManager, previewManager, operationManager, camera, 20),
+          new PanningTool(camera, operationManager)
         };
 
     selectedTool = tools[0];
@@ -142,8 +144,10 @@ public class App {
 
       if (IsKeyDown(KEY_W)) {
         selectedTool = tools[1];
-      } else if (IsKeyUp(KEY_W)) {
+      } else if (IsKeyDown(KEY_A)) {
         selectedTool = tools[0];
+      } else if (IsKeyDown(KEY_M)) {
+        selectedTool = tools[2];
       }
 
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !mouseDown) {
@@ -169,7 +173,10 @@ public class App {
         operationManager.redo();
       }
 
-      camera.setZoom(Math.clamp(camera.getZoom() + GetMouseWheelMove() * 0.01f, 0.1f, 5.0f));
+      camera.zoomAt(
+          width / 2f,
+          height / 2f,
+          Math.clamp(camera.getZoom() + GetMouseWheelMove() * 0.1f, 0.1f, 5.0f));
     }
   }
 }

@@ -4,11 +4,23 @@ import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
 
 public class Camera {
-  private float x = 0;
-  private float y = 0;
-  private float zoom = 1.0f;
+  private float x;
+  private float y;
+  private float zoom;
 
-  public Camera() {}
+  public Camera(float x, float y, float zoom) {
+    this.x = x;
+    this.y = y;
+    this.zoom = zoom;
+  }
+
+  public Camera(float x, float y) {
+    this(x, y, 1.0f);
+  }
+
+  public Camera() {
+    this(0, 0, 1);
+  }
 
   public float getX() {
     return x;
@@ -24,6 +36,21 @@ public class Camera {
 
   public void setY(float y) {
     this.y = y;
+  }
+
+  public void zoomAt(float screenX, float screenY, float newZoom) {
+    // World position underneath the chosen screen point before zooming.
+    float worldX = x + screenX / zoom;
+    float worldY = y + screenY / zoom;
+
+    // Clamp zoom.
+    newZoom = Math.max(0.1f, Math.min(newZoom, 10.0f));
+
+    // Update camera position to preserve the world point.
+    x = worldX - screenX / newZoom;
+    y = worldY - screenY / newZoom;
+
+    zoom = newZoom;
   }
 
   public float getZoom() {

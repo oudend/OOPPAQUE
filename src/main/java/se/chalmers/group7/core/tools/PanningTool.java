@@ -39,8 +39,8 @@ public class PanningTool implements Tool {
     if (!dragging) return;
 
     // Calculate pointer movement
-    int deltaX = (int) ((x - previousX) / camera.getZoom());
-    int deltaY = (int) ((y - previousY) / camera.getZoom());
+    float deltaX = ((x - previousX) / camera.getZoom());
+    float deltaY = ((y - previousY) / camera.getZoom());
 
     // Adjust camera position
     camera.setX(camera.getX() - deltaX);

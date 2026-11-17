@@ -163,6 +163,8 @@ public class LayerRenderer {
         }
       }
 
+      // draw an outline around the currently selected layer
+
       renderLayer(layer, camera);
     }
   }

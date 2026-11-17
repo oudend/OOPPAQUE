@@ -99,8 +99,4 @@ public class Camera {
 
     return new Raylib.Vector2().x(localX).y(localY);
   }
-
-  //    Vector2 worldToScreen(Vector2 worldPosition);
-  //
-  //    Vector2 screenToWorld(Vector2 screenPosition);
 }

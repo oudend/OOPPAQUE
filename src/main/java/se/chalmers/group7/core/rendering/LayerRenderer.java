@@ -139,13 +139,16 @@ public class LayerRenderer {
     Raylib.Texture compositeTexture =
         createLayerComposite(layer, previewTexture, previewBlendingMode);
 
+    BeginTextureMode(renderTexture);
     renderLayerComposite(layer, compositeTexture, camera);
+    EndTextureMode();
   }
 
   public void render(Camera camera) {
     Canvas previewCanvas = layerPreviewManager.getPreviewCanvas();
     BeginTextureMode(renderTexture);
     ClearBackground(BLANK);
+    EndTextureMode();
 
     for (int i = 0; i < layerManager.getLayerCount(); i++) {
       Layer layer = layerManager.getLayer(i);
@@ -162,7 +165,5 @@ public class LayerRenderer {
 
       renderLayer(layer, camera);
     }
-
-    EndTextureMode();
   }
 }

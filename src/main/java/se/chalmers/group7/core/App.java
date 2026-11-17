@@ -6,6 +6,7 @@ import static se.chalmers.group7.core.canvas.utils.RaylibBlendModes.applyBlendMo
 
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.RaylibCanvas;
+import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerPreviewManager;
 import se.chalmers.group7.core.layers.PixelLayer;
@@ -45,7 +46,10 @@ public class App {
 
     layerManager = new LayerManager();
 
+    layerManager.addLayer(getTransparencyLayer());
     layerManager.addLayer(new PixelLayer(this.width, this.height));
+
+    layerManager.setActiveLayer(1);
 
     previewManager =
         new LayerPreviewManager(new RaylibCanvas(this.width, this.height), BlendingMode.NORMAL);
@@ -59,18 +63,16 @@ public class App {
         };
 
     selectedTool = tools[0];
-
-    createTransparencyPattern();
   }
 
-  private RenderTexture transparencyPattern;
+  private Layer getTransparencyLayer() {
+    RenderTexture transparencyPattern = LoadRenderTexture(20, 20);
 
-  private void createTransparencyPattern() {
-    transparencyPattern = LoadRenderTexture(20, 20);
+    RenderTexture transparencyTexture = LoadRenderTexture(width, height);
 
     BeginTextureMode(transparencyPattern);
 
-    ClearBackground(BLANK);
+    ClearBackground(WHITE);
 
     DrawRectangle(0, 0, 10, 10, GRAY);
     DrawRectangle(10, 10, 10, 10, GRAY);
@@ -78,15 +80,10 @@ public class App {
     EndTextureMode();
 
     SetTextureWrap(transparencyPattern.texture(), TEXTURE_WRAP_REPEAT);
-  }
 
-  private void render() {
-    BeginDrawing();
-    ClearBackground(
-        RAYWHITE); // not necessary since the transparent pattern is writing over all pixels
-    // anyway.
+    //    RaylibCanvas canvas = new RaylibCanvas(width, height);
 
-    // Renders transparent pattern
+    BeginTextureMode(transparencyTexture);
     applyBlendMode(BlendingMode.NORMAL);
     DrawTexturePro(
         transparencyPattern.texture(),
@@ -96,6 +93,29 @@ public class App {
         0,
         WHITE);
     EndBlendMode();
+    EndTextureMode();
+
+    RaylibCanvas canvas = RaylibCanvas.fromTexture(transparencyTexture.texture());
+
+    return new PixelLayer(canvas, 0, 0, canvas.getWidth(), canvas.getHeight(), 0);
+  }
+
+  private void render() {
+    BeginDrawing();
+    ClearBackground(
+        DARKGRAY); // not necessary since the transparent pattern is writing over all pixels
+    // anyway.
+
+    // Renders transparent pattern
+    //    applyBlendMode(BlendingMode.NORMAL);
+    //    DrawTexturePro(
+    //        transparencyPattern.texture(),
+    //        new Rectangle().x(0).y(0).width(width / 20.0f * 15.0f).height(height / 20.0f * 15.0f),
+    //        new Rectangle().x(0).y(0).width(width).height(height),
+    //        Vector2Zero(),
+    //        0,
+    //        WHITE);
+    //    EndBlendMode();
 
     layerRenderer.render(camera);
 
@@ -148,6 +168,8 @@ public class App {
       if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
         operationManager.redo();
       }
+
+      camera.setZoom(Math.clamp(camera.getZoom() + GetMouseWheelMove() * 0.01f, 0.1f, 5.0f));
     }
   }
 }

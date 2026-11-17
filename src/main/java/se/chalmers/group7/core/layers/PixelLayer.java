@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.layers;
 
-import se.chalmers.group7.core.Canvas;
+import se.chalmers.group7.core.canvas.Canvas;
+import se.chalmers.group7.core.canvas.RaylibCanvas;
 
 public class PixelLayer implements Layer {
   private Canvas canvas;
@@ -9,6 +10,7 @@ public class PixelLayer implements Layer {
   private int width;
   private int height;
   private float rotation;
+  private final LayerSettings layerSettings;
 
   public PixelLayer(Canvas canvas, int x, int y, int width, int height, float rotation) {
     this.x = x;
@@ -17,15 +19,17 @@ public class PixelLayer implements Layer {
     this.height = height;
     this.rotation = rotation;
     this.canvas = canvas;
+
+    this.layerSettings = new LayerSettings();
   }
 
-  public PixelLayer(Canvas canvas, int width, int height) {
-    this(canvas, 0, 0, width, height, 0);
+  public PixelLayer(int width, int height) {
+    this(new RaylibCanvas(width, height), 0, 0, width, height, 0);
   }
 
   @Override
   public Canvas getCanvas() {
-    return null;
+    return this.canvas;
   }
 
   @Override
@@ -51,5 +55,10 @@ public class PixelLayer implements Layer {
   @Override
   public float getRotation() {
     return this.rotation;
+  }
+
+  @Override
+  public LayerSettings getLayerSettings() {
+    return this.layerSettings;
   }
 }

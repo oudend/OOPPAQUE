@@ -44,7 +44,7 @@ public class Camera {
     float worldY = y + screenY / zoom;
 
     // Clamp zoom.
-    newZoom = Math.max(0.1f, Math.min(newZoom, 10.0f));
+    newZoom = Math.clamp(newZoom, 0.01f, 100f);
 
     // Update camera position to preserve the world point.
     x = worldX - screenX / newZoom;
@@ -58,7 +58,7 @@ public class Camera {
   }
 
   public void setZoom(float zoom) {
-    this.zoom = Math.max(0.1f, zoom);
+    this.zoom = Math.max(0.0f, zoom);
   }
 
   public Raylib.Vector2 screenToWorld(float screenX, float screenY) {

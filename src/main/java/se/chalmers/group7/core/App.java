@@ -122,7 +122,7 @@ public class App {
         mouseDown = false;
       }
 
-      if (Vector2Distance(previousMousePosition, mousePosition) > 1) {
+      if (Vector2Distance(previousMousePosition, mousePosition) > 0.5f) {
         previousMousePosition = mousePosition;
         selectedTool.onPointerMove((int) mousePosition.x(), (int) mousePosition.y());
       }
@@ -138,7 +138,8 @@ public class App {
       camera.zoomAt(
           width / 2f,
           height / 2f,
-          Math.clamp(camera.getZoom() + GetMouseWheelMove() * 0.1f, 0.1f, 5.0f));
+          Math.clamp(
+              camera.getZoom() + GetMouseWheelMove() * 0.1f * camera.getZoom(), 0.1f, 50.0f));
     }
   }
 }

@@ -31,7 +31,8 @@ public class App {
 
     InitWindow(this.width, this.height, "Demo");
 
-    String iconPath = System.getProperty("user.dir") + "/src/main/java/se/chalmers/group7/OOPP_icon.png";
+    String iconPath =
+        System.getProperty("user.dir") + "/src/main/java/se/chalmers/group7/OOPP_icon.png";
     Image icon = LoadImage(iconPath);
     ImageFormat(icon, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     SetWindowIcon(icon);

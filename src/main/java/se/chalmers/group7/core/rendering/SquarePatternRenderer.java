@@ -5,13 +5,13 @@ import static com.raylib.Raylib.*;
 
 import com.raylib.Raylib;
 
-public class TransparencyPatternRenderer {
+public class SquarePatternRenderer {
   RenderTexture patternRenderTexture;
   private final int squareSize;
 
   Color approximateColor;
 
-  public TransparencyPatternRenderer(int squareSize, Color squareColor, Color backgroundColor) {
+  public SquarePatternRenderer(int squareSize, Color squareColor, Color backgroundColor) {
     patternRenderTexture = LoadRenderTexture(squareSize * 2, squareSize * 2);
     this.squareSize = squareSize;
 
@@ -29,7 +29,7 @@ public class TransparencyPatternRenderer {
     approximateColor = ColorTint(squareColor, backgroundColor);
   }
 
-  public TransparencyPatternRenderer() {
+  public SquarePatternRenderer() {
     this(10, LIGHTGRAY, WHITE);
   }
 
@@ -38,11 +38,29 @@ public class TransparencyPatternRenderer {
 
     Raylib.Vector2 screenPosition = camera.worldToScreen(0, 0);
 
-    Raylib.Rectangle source = new Raylib.Rectangle().x(0).y(0).width(width).height(-height);
+    //    Raylib.Rectangle source = new Raylib.Rectangle().x(0).y(0).width(Math.min(width *
+    // squareSize, width * zoom)).height(-Math.min(height * squareSize, height * zoom));
+
+    float sourceWidth = Math.min(width * squareSize, width * zoom);
+    float sourceHeight = Math.min(height * squareSize, height * zoom);
 
     // Layer's dimensions after zooming
     float finalWidth = width * zoom;
     float finalHeight = height * zoom;
+
+    float screenCenterX = Raylib.GetScreenWidth() / 2.0f;
+    float screenCenterY = Raylib.GetScreenHeight() / 2.0f;
+
+    float sourceX =
+        patternRenderTexture.texture().width() / 2.0f
+            - (screenCenterX - screenPosition.x()) * (sourceWidth / finalWidth);
+    float sourceY =
+        patternRenderTexture.texture().height() / 2.0f
+            - sourceHeight
+            + (screenCenterY - screenPosition.y()) * (sourceHeight / finalHeight);
+
+    Raylib.Rectangle source =
+        new Raylib.Rectangle().x(sourceX).y(sourceY).width(sourceWidth).height(-sourceHeight);
 
     // Rotation pivot: center of the layer, in screen pixels
     Raylib.Vector2 origin = new Raylib.Vector2().x(finalWidth / 2.0f).y(finalHeight / 2.0f);

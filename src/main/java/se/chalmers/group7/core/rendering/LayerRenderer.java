@@ -1,7 +1,6 @@
 package se.chalmers.group7.core.rendering;
 
-import static com.raylib.Colors.BLANK;
-import static com.raylib.Colors.WHITE;
+import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 import static se.chalmers.group7.core.canvas.utils.RaylibBlendModes.applyBlendMode;
 
@@ -90,7 +89,8 @@ public class LayerRenderer {
     return intermediateTexture.texture();
   }
 
-  private void renderLayerComposite(Layer layer, Raylib.Texture compositeTexture, Camera camera) {
+  private void renderLayerComposite(
+      Layer layer, boolean active, Raylib.Texture compositeTexture, Camera camera) {
     LayerSettings settings = layer.getLayerSettings();
 
     float zoom = camera.getZoom();
@@ -126,21 +126,31 @@ public class LayerRenderer {
     Raylib.DrawTexturePro(compositeTexture, source, destination, origin, layer.getRotation(), tint);
 
     Raylib.EndBlendMode();
+
+    if (active) {
+      LayerGuideRenderer.render(camera, layer);
+      //      RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f,
+      // BLACK);
+    }
   }
 
-  private void renderLayer(Layer layer, Camera camera) {
+  private void renderLayer(Layer layer, Camera camera, boolean active) {
     Raylib.Texture compositeTexture = layer.getCanvas().getTexture();
 
-    renderLayerComposite(layer, compositeTexture, camera);
+    renderLayerComposite(layer, active, compositeTexture, camera);
   }
 
   private void renderLayer(
-      Layer layer, Camera camera, Raylib.Texture previewTexture, BlendingMode previewBlendingMode) {
+      Layer layer,
+      Camera camera,
+      boolean active,
+      Raylib.Texture previewTexture,
+      BlendingMode previewBlendingMode) {
     Raylib.Texture compositeTexture =
         createLayerComposite(layer, previewTexture, previewBlendingMode);
 
     BeginTextureMode(renderTexture);
-    renderLayerComposite(layer, compositeTexture, camera);
+    renderLayerComposite(layer, active, compositeTexture, camera);
     EndTextureMode();
   }
 
@@ -153,19 +163,21 @@ public class LayerRenderer {
     for (int i = 0; i < layerManager.getLayerCount(); i++) {
       Layer layer = layerManager.getLayer(i);
 
-      if (i == layerManager.getActiveLayerIndex()) {
+      boolean active = i == layerManager.getActiveLayerIndex();
+
+      if (active) {
         if (previewCanvas != null) {
           Raylib.Texture previewTexture = previewCanvas.getTexture();
           BlendingMode previewBlending = layerPreviewManager.getPreviewBlending();
 
-          renderLayer(layer, camera, previewTexture, previewBlending);
+          renderLayer(layer, camera, active, previewTexture, previewBlending);
           continue;
         }
       }
 
       // draw an outline around the currently selected layer
 
-      renderLayer(layer, camera);
+      renderLayer(layer, camera, active);
     }
   }
 }

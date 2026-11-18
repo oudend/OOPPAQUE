@@ -11,11 +11,8 @@ import se.chalmers.group7.core.layers.PixelLayer;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerRenderer;
-import se.chalmers.group7.core.rendering.TransparencyPatternRenderer;
-import se.chalmers.group7.core.tools.Brush;
-import se.chalmers.group7.core.tools.Eraser;
-import se.chalmers.group7.core.tools.PanningTool;
-import se.chalmers.group7.core.tools.Tool;
+import se.chalmers.group7.core.rendering.SquarePatternRenderer;
+import se.chalmers.group7.core.tools.*;
 
 public class App {
 
@@ -34,7 +31,7 @@ public class App {
 
   private final OperationManager operationManager = new OperationManager();
 
-  private final TransparencyPatternRenderer transparencyPatternRenderer;
+  private final SquarePatternRenderer transparencyPatternRenderer;
 
   private final Tool[] tools;
   private Camera camera = new Camera();
@@ -52,7 +49,7 @@ public class App {
 
     testLayer.setX(200);
 
-    transparencyPatternRenderer = new TransparencyPatternRenderer();
+    transparencyPatternRenderer = new SquarePatternRenderer();
 
     //    layerManager.addLayer(getTransparencyLayer());
     layerManager.addLayer(new PixelLayer(this.width, this.height));
@@ -66,9 +63,10 @@ public class App {
 
     tools =
         new Tool[] {
-          new Brush(layerManager, previewManager, operationManager, camera, 20),
-          new Eraser(layerManager, previewManager, operationManager, camera, 20),
-          new PanningTool(camera, operationManager)
+          new Brush(layerManager, previewManager, operationManager, camera, 10),
+          new Eraser(layerManager, previewManager, operationManager, camera, 10),
+          new PanningTool(camera, operationManager),
+          new MoveTool(layerManager, operationManager, camera)
         };
 
     selectedTool = tools[0];
@@ -104,12 +102,14 @@ public class App {
 
       Vector2 mousePosition = GetMousePosition();
 
-      if (IsKeyDown(KEY_W)) {
-        selectedTool = tools[1];
-      } else if (IsKeyDown(KEY_A)) {
+      if (IsKeyDown(KEY_A)) {
         selectedTool = tools[0];
+      } else if (IsKeyDown(KEY_W)) {
+        selectedTool = tools[1];
       } else if (IsKeyDown(KEY_M)) {
         selectedTool = tools[2];
+      } else if (IsKeyDown(KEY_V)) {
+        selectedTool = tools[3];
       }
 
       if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !mouseDown) {

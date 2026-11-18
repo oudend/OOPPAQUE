@@ -75,7 +75,7 @@ public class Camera {
     return worldToLayerCoordinates(layer, worldPosition.x(), worldPosition.y());
   }
 
-  public Raylib.Vector2 worldToLayerCoordinates(Layer layer, float worldX, float worldY) {
+  public static Raylib.Vector2 worldToLayerCoordinates(Layer layer, float worldX, float worldY) {
     // Translate into layer-relative coordinates.
     float dx = worldX - layer.getX() - layer.getWidth() / 2.0f;
     float dy = worldY - layer.getY() - layer.getHeight() / 2.0f;

@@ -81,4 +81,18 @@ public class PixelLayer implements Layer {
   public LayerSettings getLayerSettings() {
     return this.layerSettings;
   }
+
+  @Override
+  public LayerTransform getLayerTransform() {
+    return new LayerTransform(x, y, width, height, rotation);
+  }
+
+  @Override
+  public void setLayerTransform(LayerTransform layerTransform) {
+    this.x = layerTransform.x();
+    this.y = layerTransform.y();
+    this.width = layerTransform.width();
+    this.height = layerTransform.height();
+    this.rotation = layerTransform.rotation();
+  }
 }

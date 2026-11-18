@@ -1,6 +1,5 @@
 package se.chalmers.group7.core.tools;
 
-import se.chalmers.group7.core.operations.CameraTransformOperation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 
@@ -62,18 +61,18 @@ public class PanningTool implements Tool {
     float endCameraY = camera.getY();
 
     // Create operation
-    CameraTransformOperation operation =
-        new CameraTransformOperation(
-            camera,
-            startCameraX,
-            startCameraY,
-            endCameraX,
-            endCameraY,
-            camera.getZoom(),
-            camera.getZoom(),
-            true);
+    //    CameraTransformOperation operation =
+    //        new CameraTransformOperation(
+    //            camera,
+    //            startCameraX,
+    //            startCameraY,
+    //            endCameraX,
+    //            endCameraY,
+    //            camera.getZoom(),
+    //            camera.getZoom(),
+    //            true);
 
-    operationManager.addOperation(operation);
+    //    operationManager.addOperation(operation);
   }
 
   @Override

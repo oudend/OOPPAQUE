@@ -7,13 +7,27 @@ public interface Layer {
 
   int getX();
 
+  void setX(int x);
+
   int getY();
+
+  void setY(int y);
 
   int getWidth();
 
+  void setWidth(int width);
+
   int getHeight();
 
+  void setHeight(int height);
+
   float getRotation();
+
+  void setRotation(float rotation);
+
+  void setLayerTransform(LayerTransform layerTransform);
+
+  LayerTransform getLayerTransform();
 
   LayerSettings getLayerSettings();
 }

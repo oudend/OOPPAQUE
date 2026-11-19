@@ -53,7 +53,7 @@ public class ACanvasInput implements Action {
       canvas.getSelectedTool().onPointerUp();
     }
 
-    if (input.deltaX() > 1 || input.deltaY() > 1) {
+    if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) / GetFrameTime()  > 1) {
       canvas.getSelectedTool().onPointerMove(input.xPos(), input.yPos());
     }
 

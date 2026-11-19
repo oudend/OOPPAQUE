@@ -8,7 +8,15 @@ public class RaylibBlendModes {
   public static void applyBlendMode(BlendingMode blendingMode) {
     switch (blendingMode) {
       case NORMAL:
-        BeginBlendMode(BLEND_ALPHA);
+        //        BeginBlendMode(BLEND_ALPHA);
+        rlSetBlendFactorsSeparate(
+            RL_SRC_ALPHA,
+            RL_ONE_MINUS_SRC_ALPHA,
+            RL_ONE,
+            RL_ONE_MINUS_SRC_ALPHA,
+            RL_FUNC_ADD,
+            RL_FUNC_ADD);
+        BeginBlendMode(BLEND_CUSTOM_SEPARATE);
         break;
       case REPLACE:
         // 1 * src + 0 * dst = exact copy of src (RGB and Alpha)

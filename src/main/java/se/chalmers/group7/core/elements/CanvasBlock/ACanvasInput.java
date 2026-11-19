@@ -6,6 +6,8 @@ import static com.raylib.Raylib.KEY_W;
 import static com.raylib.Raylib.KEY_Y;
 import static com.raylib.Raylib.KEY_Z;
 
+import se.chalmers.group7.core.tools.Brush;
+import se.chalmers.group7.core.tools.Eraser;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.model.Action;
 
@@ -36,9 +38,9 @@ public class ACanvasInput implements Action {
     if (!IsKeyDown(KEY_K)) canvas.prepareComposite();
 
     if (IsKeyDown(KEY_W)) {
-      canvas.setSelectedTool(1);
+      canvas.setSelectedTool(Eraser.getInstance());
     } else {
-      canvas.setSelectedTool(0);
+      canvas.setSelectedTool(Brush.getInstance());
     }
 
     if (input.mouseLeft().down()) {

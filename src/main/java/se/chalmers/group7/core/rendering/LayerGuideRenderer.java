@@ -4,6 +4,7 @@ import static com.raylib.Colors.*;
 
 import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
+import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.rendering.utils.RaylibUtils;
 
 public class LayerGuideRenderer {
@@ -29,33 +30,36 @@ public class LayerGuideRenderer {
 
     RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f, BLUE);
 
-    float halfWidth = width / 2.0f;
-    float halfHeight = height / 2.0f;
+    //    float halfWidth = width / 2.0f;
+    //    float halfHeight = height / 2.0f;
 
-    Raylib.Vector2[] points = {
-      // Corners
-      new Raylib.Vector2().x(-halfWidth).y(-halfHeight),
-      new Raylib.Vector2().x(halfWidth).y(-halfHeight),
-      new Raylib.Vector2().x(halfWidth).y(halfHeight),
-      new Raylib.Vector2().x(-halfWidth).y(halfHeight),
+    //    Raylib.Vector2[] points = {
+    //      // Corners
+    //      new Raylib.Vector2().x(-halfWidth).y(-halfHeight),
+    //      new Raylib.Vector2().x(halfWidth).y(-halfHeight),
+    //      new Raylib.Vector2().x(halfWidth).y(halfHeight),
+    //      new Raylib.Vector2().x(-halfWidth).y(halfHeight),
+    //
+    //      // Edge midpoints
+    //      new Raylib.Vector2().x(0).y(-halfHeight),
+    //      new Raylib.Vector2().x(halfWidth).y(0),
+    //      new Raylib.Vector2().x(0).y(halfHeight),
+    //      new Raylib.Vector2().x(-halfWidth).y(0)
+    //    };
 
-      // Edge midpoints
-      new Raylib.Vector2().x(0).y(-halfHeight),
-      new Raylib.Vector2().x(halfWidth).y(0),
-      new Raylib.Vector2().x(0).y(halfHeight),
-      new Raylib.Vector2().x(-halfWidth).y(0)
-    };
-
-    for (Raylib.Vector2 point : points) {
+    for (LayerUtils.Handle handle : LayerUtils.getLayerWorldHandles(layer, camera)) {
       // Rotate around the rectangle's center
-      Raylib.Vector2 rotated =
-          Raylib.Vector2Rotate(point, (float) Math.toRadians(layer.getRotation()));
+      //      Raylib.Vector2 rotated =
+      //          Raylib.Vector2Rotate(point, (float) Math.toRadians(layer.getRotation()));
 
-      // Convert to screen coordinates
-      float x = destination.x() + rotated.x();
-      float y = destination.y() + rotated.y();
+      Raylib.Vector2 screenPoint =
+          camera.worldToScreen(handle.worldCoords().x(), handle.worldCoords().y());
+      //
+      //      // Convert to screen coordinates
+      //      float x = destination.x() + rotated.x();
+      //      float y = destination.y() + rotated.y();
 
-      Raylib.DrawCircleV(new Raylib.Vector2().x(x).y(y), 6f, RED);
+      Raylib.DrawCircleV(screenPoint, 6f, RED);
     }
   }
 }

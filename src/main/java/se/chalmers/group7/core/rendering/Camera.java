@@ -91,9 +91,34 @@ public class Camera {
     localY += layer.getHeight() / 2.0f;
 
     // Convert workspace coordinates to canvas pixel coordinates.
-    localX *= layer.getCanvas().getWidth() / (float) layer.getWidth();
-    localY *= layer.getCanvas().getHeight() / (float) layer.getHeight();
+    //    localX *= layer.getCanvas().getWidth() / (float) layer.getWidth();
+    //    localY *= layer.getCanvas().getHeight() / (float) layer.getHeight();
 
     return new Raylib.Vector2().x(localX).y(localY);
+  }
+
+  public static Raylib.Vector2 layerCoordinatesToWorld(Layer layer, float layerX, float layerY) {
+    // Convert canvas pixel coordinates back to workspace coordinates.
+    float localX = layerX; // * (layer.getWidth() / (float) layer.getCanvas().getWidth());
+    float localY = layerY; // * (layer.getHeight() / (float) layer.getCanvas().getHeight());
+
+    // Move origin from top-left to center.
+    localX -= layer.getWidth() / 2.0f;
+    localY -= layer.getHeight() / 2.0f;
+
+    // Re-apply the layer rotation.
+    double radians = Math.toRadians(layer.getRotation());
+
+    float cos = (float) Math.cos(radians);
+    float sin = (float) Math.sin(radians);
+
+    float dx = localX * cos - localY * sin;
+    float dy = localX * sin + localY * cos;
+
+    // Translate back into world coordinates.
+    float worldX = dx + layer.getX() + layer.getWidth() / 2.0f;
+    float worldY = dy + layer.getY() + layer.getHeight() / 2.0f;
+
+    return new Raylib.Vector2().x(worldX).y(worldY);
   }
 }

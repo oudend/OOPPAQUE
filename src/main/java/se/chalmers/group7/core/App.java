@@ -45,13 +45,11 @@ public class App {
 
     layerManager = new LayerManager();
 
-    PixelLayer testLayer = new PixelLayer(this.width, this.height);
-
-    testLayer.setX(200);
-
     transparencyPatternRenderer = new SquarePatternRenderer();
 
     //    layerManager.addLayer(getTransparencyLayer());
+    layerManager.addLayer(new PixelLayer(this.width, this.height));
+
     layerManager.addLayer(new PixelLayer(this.width, this.height));
 
     layerManager.setActiveLayer(0);

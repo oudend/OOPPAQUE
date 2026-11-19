@@ -53,7 +53,7 @@ public class CanvasBlock extends LayoutBlock {
           new Eraser(selectedLayer, previewManager, operationManager, 20)
         };
 
-    setSelectedTool(0);
+    setSelectedTool(Brush.getInstance());
 
     compositeTexture = LoadRenderTexture(width, height);
 
@@ -126,8 +126,8 @@ public class CanvasBlock extends LayoutBlock {
     SetTextureWrap(transparencyPattern.texture(), TEXTURE_WRAP_REPEAT);
   }
 
-  public void setSelectedTool(int toolIndex) {
-    selectedTool = tools[toolIndex];
+  public void setSelectedTool(Tool tool) {
+    selectedTool = tool;
   }
 
   public RenderTexture getTransparencyPattern() {

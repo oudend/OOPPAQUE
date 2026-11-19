@@ -27,10 +27,6 @@ public class ACanvasInput implements Action {
   public void executeAction(Input input) {
     if (debug) {
       if (IsKeyDown(KEY_M)) {
-        rlCheckErrors();
-      }
-
-      if (IsKeyDown(KEY_M)) {
         System.out.println(IsTextureValid(canvas.getTransparencyPattern().texture()));
 
         rlCheckErrors();

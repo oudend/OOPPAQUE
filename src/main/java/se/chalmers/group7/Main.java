@@ -7,7 +7,7 @@ import se.chalmers.group7.core.App;
 
 public class Main {
   public static void main(String args[]) {
-    App app = new App(800, 450, false);
+    App app = new App(800, 450, true);
     app.run();
   }
 }

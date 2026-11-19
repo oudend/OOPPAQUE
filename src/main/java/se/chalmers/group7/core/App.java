@@ -7,10 +7,7 @@ import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
 import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.controller.InputManager;
-import se.chalmers.group7.core.ui.model.BoxBlock;
-import se.chalmers.group7.core.ui.model.BoxProperties;
-import se.chalmers.group7.core.ui.model.LayoutBlock;
-import se.chalmers.group7.core.ui.model.LayoutLayer;
+import se.chalmers.group7.core.ui.model.*;
 import se.chalmers.group7.core.ui.view.LayoutComposer;
 
 public class App {
@@ -47,8 +44,10 @@ public class App {
     CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
     canvas.addAction(new ACanvasInput(canvas, debug));
     canvasBox.addChild(canvas);
+
     root = rootBox;
     LayoutLayer layer = new LayoutLayer(root, 0, 0, width, height);
+
     layoutComposer = new LayoutComposer();
     layoutComposer.addLayer(layer);
   }
@@ -57,7 +56,6 @@ public class App {
     while (!WindowShouldClose()) {
       Input input = inputManager.getInput();
       root.evaluateInput(input);
-      layoutComposer.draw();
 
       if (debug) {
         layoutComposer.drawWithFPS();

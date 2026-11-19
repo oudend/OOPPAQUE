@@ -26,20 +26,20 @@ public class ACanvasInput implements Action {
 
   public void executeAction(Input input) {
     if (debug) {
-      if (input.keyCodes().contains(KEY_M)) {
+      if (IsKeyDown(KEY_M)) {
         rlCheckErrors();
       }
 
-      if (input.keyCodes().contains(KEY_M)) {
+      if (IsKeyDown(KEY_M)) {
         System.out.println(IsTextureValid(canvas.getTransparencyPattern().texture()));
 
         rlCheckErrors();
       }
     }
 
-    if (!input.keyCodes().contains(KEY_K)) canvas.prepareComposite();
+    if (!IsKeyDown(KEY_K)) canvas.prepareComposite();
 
-    if (input.keyCodes().contains(KEY_W)) {
+    if (IsKeyDown(KEY_W)) {
       canvas.setSelectedTool(1);
     } else {
       canvas.setSelectedTool(0);
@@ -57,11 +57,11 @@ public class ACanvasInput implements Action {
       canvas.getSelectedTool().onPointerMove(input.xPos(), input.yPos());
     }
 
-    if (input.keyCodes().contains(KEY_LEFT_CONTROL) && input.keyCodes().contains(KEY_Z)) {
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z)) {
       canvas.getOperationManager().undo();
     }
 
-    if (input.keyCodes().contains(KEY_LEFT_CONTROL) && input.keyCodes().contains(KEY_Y)) {
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
       canvas.getOperationManager().redo();
     }
   }

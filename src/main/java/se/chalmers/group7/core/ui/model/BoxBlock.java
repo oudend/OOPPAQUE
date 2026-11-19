@@ -36,11 +36,6 @@ public class BoxBlock extends LayoutBlock {
         || input.xPos() >= width - properties.getMarginX() - properties.getBorderSize()
         || input.yPos() >= height - properties.getMarginY() - properties.getBorderSize()) return;
 
-    input =
-        input.enterArea(
-            properties.getMarginX() + properties.getBorderSize(),
-            properties.getMarginY() + properties.getBorderSize());
-
     if (!children.isEmpty()) {
       int position = getInputPos(input);
       int left = 0;
@@ -51,7 +46,7 @@ public class BoxBlock extends LayoutBlock {
         int middle = left + (right - left) / 2;
         int childPos = getDirectionPos(children.get(middle));
 
-        if (childPos < position) {
+        if (childPos <= position) {
           resultIndex = middle;
           left = middle + 1;
         } else {
@@ -97,7 +92,7 @@ public class BoxBlock extends LayoutBlock {
         properties.getBorderSize(),
         properties.getBorderColor());
 
-    int border = (int) properties.getBorderSize();
+    int border = properties.getBorderSize();
 
     topLeftX += border + properties.getPaddingX();
     width -= 2 * (border + properties.getPaddingX());

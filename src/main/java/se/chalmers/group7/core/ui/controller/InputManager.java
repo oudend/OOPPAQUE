@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class InputManager {
+  Set<Integer> oldKeyCodes = new HashSet<>();
+
   public Input getInput() {
     Set<Integer> keyCodes = new HashSet<>();
 
@@ -14,6 +16,10 @@ public class InputManager {
       keyCodes.add(key);
       key = GetKeyPressed();
     }
+    for (int k : oldKeyCodes) {
+      if (IsKeyDown(k)) keyCodes.add(k);
+    }
+    oldKeyCodes = keyCodes;
 
     Vector2 mouseDelta = GetMouseDelta();
 

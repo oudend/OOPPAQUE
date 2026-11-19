@@ -1,17 +1,17 @@
-package ui.model;
+package se.chalmers.group7.core.ui.model;
 
 import java.util.List;
-import ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public abstract class LayoutBlock implements Actionable {
-  int xPos;
-  int yPos;
-  int width;
-  int height;
-  int desiredWidth;
-  int desiredHeight;
+  protected int xPos;
+  protected int yPos;
+  protected int width;
+  protected int height;
+  protected int desiredWidth;
+  protected int desiredHeight;
 
-  List<Action> actions;
+  protected List<Action> actions;
 
   public void evaluateInput(Input input) {
     for (Action a : actions) {

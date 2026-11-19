@@ -1,12 +1,10 @@
-package ui.model;
+package se.chalmers.group7.core.ui.model;
 
-import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
-import com.raylib.Raylib.*;
 import java.util.ArrayList;
 import java.util.List;
-import ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public class BoxBlock extends LayoutBlock {
   List<LayoutBlock> children;
@@ -99,10 +97,12 @@ public class BoxBlock extends LayoutBlock {
         properties.getBorderSize(),
         properties.getBorderColor());
 
-    topLeftX += properties.getPaddingX();
-    width -= properties.getPaddingX();
-    topLeftY += properties.getPaddingY();
-    height -= properties.getPaddingY();
+    int border = (int) properties.getBorderSize();
+
+    topLeftX += border + properties.getPaddingX();
+    width -= 2 * (border + properties.getPaddingX());
+    topLeftY += border + properties.getPaddingY();
+    height -= 2 * (border + properties.getPaddingY());
 
     int position = (properties.getDirection() == Direction.row) ? topLeftX : topLeftY;
     for (LayoutBlock c : children) {

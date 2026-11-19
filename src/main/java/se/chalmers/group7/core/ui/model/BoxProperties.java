@@ -1,20 +1,22 @@
-package ui.model;
+package se.chalmers.group7.core.ui.model;
+
+import static com.raylib.Colors.BLANK;
 
 import com.raylib.Raylib.Color;
 
 public class BoxProperties {
-  private Direction direction;
+  private Direction direction = Direction.row;
 
-  private Color color;
+  private Color color = BLANK;
 
-  private int borderSize;
-  private Color borderColor;
+  private int borderSize = 0;
+  private Color borderColor = BLANK;
 
-  private int marginX;
-  private int marginY;
+  private int marginX = 0;
+  private int marginY = 0;
 
-  private int paddingX;
-  private int paddingY;
+  private int paddingX = 0;
+  private int paddingY = 0;
 
   public Direction getDirection() {
     return direction;

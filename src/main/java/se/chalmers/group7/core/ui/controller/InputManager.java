@@ -1,4 +1,4 @@
-package ui.controller;
+package se.chalmers.group7.core.ui.controller;
 
 import static com.raylib.Raylib.*;
 

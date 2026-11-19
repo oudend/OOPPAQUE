@@ -1,6 +1,6 @@
-package ui.model;
+package se.chalmers.group7.core.ui.model;
 
-import ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public abstract class MouseAction implements Action {
   public void executeAction(Input input) {

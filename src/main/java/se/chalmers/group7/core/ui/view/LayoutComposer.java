@@ -1,11 +1,11 @@
-package ui.view;
+package se.chalmers.group7.core.ui.view;
 
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import ui.model.LayoutLayer;
+import se.chalmers.group7.core.ui.model.LayoutLayer;
 
 public class LayoutComposer {
   List<LayoutLayer> layers;
@@ -29,7 +29,18 @@ public class LayoutComposer {
       l.draw();
     }
 
+    EndDrawing();
+  }
+
+  public void drawWithFPS() {
+    BeginDrawing();
+    ClearBackground(WHITE);
+    for (LayoutLayer l : layers) {
+      l.draw();
+    }
+
     DrawFPS(20, 20);
+
     EndDrawing();
   }
 }

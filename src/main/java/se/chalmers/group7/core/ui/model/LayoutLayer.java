@@ -1,11 +1,9 @@
-package ui.model;
+package se.chalmers.group7.core.ui.model;
 
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
-import com.raylib.Raylib.*;
-
-public class LayoutLayer {
+public class LayoutLayer extends LayoutBlock {
   int xPos;
   int yPos;
   int width;
@@ -24,12 +22,17 @@ public class LayoutLayer {
     this.root = root;
   }
 
+  @Override
   public void draw() {
+    draw(xPos, yPos);
+  }
+
+  public void draw(int x, int y) {
     BeginTextureMode(canvas);
     root.draw();
     EndTextureMode();
 
-    Rectangle rect = new Rectangle().x(xPos).y(yPos).width(width).height(-height);
+    Rectangle rect = new Rectangle().x(x).y(y).width(width).height(-height);
     DrawTextureRec(canvas.texture(), rect, Vector2Zero(), WHITE);
   }
 }

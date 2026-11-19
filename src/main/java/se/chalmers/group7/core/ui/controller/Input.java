@@ -1,4 +1,4 @@
-package ui.controller;
+package se.chalmers.group7.core.ui.controller;
 
 import java.util.Set;
 
@@ -15,8 +15,8 @@ public record Input(
     mouseButton mouseMiddle) {
   public Input enterArea(int x, int y) {
     return new Input(
-        this.xPos - x,
-        this.yPos - y,
+        this.globalX - x,
+        this.globalY - y,
         globalX,
         globalY,
         keyCodes,

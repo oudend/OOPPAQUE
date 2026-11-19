@@ -47,14 +47,15 @@ public class App {
 
     root = rootBox;
     if (debug) {
-      root.addAction(new Action() {
-        @Override
-        public void executeAction(Input input) {
-          if (IsKeyDown(KEY_M)) {
-            rlCheckErrors();
-          }
-        }
-      });
+      root.addAction(
+          new Action() {
+            @Override
+            public void executeAction(Input input) {
+              if (IsKeyDown(KEY_M)) {
+                rlCheckErrors();
+              }
+            }
+          });
     }
     LayoutLayer layer = new LayoutLayer(root, 0, 0, width, height);
 

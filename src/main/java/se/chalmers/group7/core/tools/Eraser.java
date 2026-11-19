@@ -12,7 +12,6 @@ import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.temp.PreviewManager;
 
 public class Eraser implements Tool {
-  private static Tool instance;
 
   private final OperationManager operationManager;
   private final Canvas canvas;
@@ -34,7 +33,6 @@ public class Eraser implements Tool {
     this.previewCanvas = previewManager.getPreviewLayer();
     this.radius = radius;
     this.operationManager = operationManager;
-    instance = this;
   }
 
   public Raylib.Color getColor() {
@@ -85,9 +83,5 @@ public class Eraser implements Tool {
   @Override
   public void deactivate() {
     // not really handle-able right now
-  }
-
-  public static Tool getInstance() {
-    return instance;
   }
 }

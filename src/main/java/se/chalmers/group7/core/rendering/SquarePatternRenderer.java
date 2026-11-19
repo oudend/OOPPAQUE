@@ -59,6 +59,11 @@ public class SquarePatternRenderer {
             - sourceHeight
             + (screenCenterY - screenPosition.y()) * (sourceHeight / finalHeight);
 
+    if (zoom > squareSize) {
+      sourceX = 0;
+      sourceY = 0;
+    }
+
     Raylib.Rectangle source =
         new Raylib.Rectangle().x(sourceX).y(sourceY).width(sourceWidth).height(-sourceHeight);
 
@@ -75,10 +80,11 @@ public class SquarePatternRenderer {
 
     Raylib.DrawTexturePro(patternRenderTexture.texture(), source, destination, origin, 0, WHITE);
 
-    DrawRectanglePro(
-        destination,
-        origin,
-        0,
-        ColorAlpha(approximateColor, Math.clamp((1.0f / (zoom * squareSize)) * 2.0f, 0.0f, 1.0f)));
+    //    DrawRectanglePro(
+    //        destination,
+    //        origin,
+    //        0,
+    //        ColorAlpha(approximateColor, Math.clamp((1.0f / (zoom * squareSize)) * 2.0f, 0.0f,
+    // 1.0f)));
   }
 }

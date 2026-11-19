@@ -43,14 +43,11 @@ public class Camera {
     float worldX = x + screenX / zoom;
     float worldY = y + screenY / zoom;
 
-    // Clamp zoom.
-    newZoom = Math.clamp(newZoom, 0.01f, 100f);
+    setZoom(newZoom);
 
     // Update camera position to preserve the world point.
-    x = worldX - screenX / newZoom;
-    y = worldY - screenY / newZoom;
-
-    zoom = newZoom;
+    x = worldX - screenX / zoom;
+    y = worldY - screenY / zoom;
   }
 
   public float getZoom() {

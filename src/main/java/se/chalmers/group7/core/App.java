@@ -139,7 +139,7 @@ public class App {
           width / 2f,
           height / 2f,
           Math.clamp(
-              camera.getZoom() + GetMouseWheelMove() * 0.1f * camera.getZoom(), 0.1f, 50.0f));
+              camera.getZoom() + GetMouseWheelMove() * 0.1f * camera.getZoom(), 0.2f, 1000.0f));
     }
   }
 }

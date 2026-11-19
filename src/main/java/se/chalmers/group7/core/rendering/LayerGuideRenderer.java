@@ -30,36 +30,24 @@ public class LayerGuideRenderer {
 
     RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f, BLUE);
 
-    //    float halfWidth = width / 2.0f;
-    //    float halfHeight = height / 2.0f;
+    Raylib.Vector2 rotationHandleLineStart =
+        camera.layerCoordinatesToWorld(layer, layer.getWidth() / 2.0f, 0);
+    Raylib.Vector2 rotationHandleLineEnd =
+        camera.layerCoordinatesToWorld(layer, layer.getWidth() / 2.0f, -80);
 
-    //    Raylib.Vector2[] points = {
-    //      // Corners
-    //      new Raylib.Vector2().x(-halfWidth).y(-halfHeight),
-    //      new Raylib.Vector2().x(halfWidth).y(-halfHeight),
-    //      new Raylib.Vector2().x(halfWidth).y(halfHeight),
-    //      new Raylib.Vector2().x(-halfWidth).y(halfHeight),
-    //
-    //      // Edge midpoints
-    //      new Raylib.Vector2().x(0).y(-halfHeight),
-    //      new Raylib.Vector2().x(halfWidth).y(0),
-    //      new Raylib.Vector2().x(0).y(halfHeight),
-    //      new Raylib.Vector2().x(-halfWidth).y(0)
-    //    };
+    Raylib.Vector2 rotationHandleLineStartS =
+        camera.worldToScreen(rotationHandleLineStart.x(), rotationHandleLineStart.y());
+    Raylib.Vector2 rotationHandleLineEndS =
+        camera.worldToScreen(rotationHandleLineEnd.x(), rotationHandleLineEnd.y());
+
+    Raylib.DrawLineEx(rotationHandleLineStartS, rotationHandleLineEndS, 2.0f, BLUE);
 
     for (LayerUtils.Handle handle : LayerUtils.getLayerWorldHandles(layer, camera)) {
-      // Rotate around the rectangle's center
-      //      Raylib.Vector2 rotated =
-      //          Raylib.Vector2Rotate(point, (float) Math.toRadians(layer.getRotation()));
-
       Raylib.Vector2 screenPoint =
           camera.worldToScreen(handle.worldCoords().x(), handle.worldCoords().y());
-      //
-      //      // Convert to screen coordinates
-      //      float x = destination.x() + rotated.x();
-      //      float y = destination.y() + rotated.y();
 
-      Raylib.DrawCircleV(screenPoint, 6f, RED);
+      Raylib.DrawCircleV(screenPoint, 6f, BLUE);
+      Raylib.DrawCircleV(screenPoint, 5f, WHITE);
     }
   }
 }

@@ -55,10 +55,10 @@ public class PanningTool implements Tool {
     if (!dragging) return;
 
     dragging = false;
-
-    // Get final camera position
-    float endCameraX = camera.getX();
-    float endCameraY = camera.getY();
+    //
+    //    // Get final camera position
+    //    float endCameraX = camera.getX();
+    //    float endCameraY = camera.getY();
 
     // Create operation
     //    CameraTransformOperation operation =

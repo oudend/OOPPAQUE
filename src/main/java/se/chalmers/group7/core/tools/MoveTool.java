@@ -80,14 +80,14 @@ public class MoveTool implements Tool {
 
     float handleDistance = Raylib.Vector2Distance(handleScreenCoords, screenVector);
 
-    if (!intersection && handleDistance > 12f) {
+    if (!intersection && handleDistance > 6f) {
       reset();
       return;
     }
 
     transformType = TransformType.MOVE;
 
-    if (handleDistance <= 12f) {
+    if (handleDistance <= 6f) {
       switch (nearestHandle.type()) {
         case ROTATION -> transformType = TransformType.ROTATE;
         case SCALE_CORNER, SCALE_WIDTH, SCALE_HEIGHT -> transformType = TransformType.RESIZE;

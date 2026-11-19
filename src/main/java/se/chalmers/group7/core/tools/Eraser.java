@@ -6,9 +6,17 @@ import static com.raylib.Raylib.ColorAlpha;
 import com.raylib.Raylib;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
+import se.chalmers.group7.core.operations.CanvasDrawOperation;
+import se.chalmers.group7.core.operations.Operation;
+import se.chalmers.group7.core.operations.OperationManager;
+import se.chalmers.group7.core.temp.PreviewManager;
 
 public class Eraser implements Tool {
-  private Canvas canvas;
+
+  private final OperationManager operationManager;
+  private final Canvas canvas;
+  private PreviewManager previewManager;
+  private Canvas previewCanvas;
   private int radius;
 
   private Integer previousX;
@@ -16,11 +24,15 @@ public class Eraser implements Tool {
 
   private boolean pointerDown = false;
 
-  private float opacity = 1.0f;
+  private float opacity = 0.5f;
 
-  public Eraser(Canvas canvas, int radius) {
+  public Eraser(
+      Canvas canvas, PreviewManager previewManager, OperationManager operationManager, int radius) {
     this.canvas = canvas;
+    this.previewManager = previewManager;
+    this.previewCanvas = previewManager.getPreviewLayer();
     this.radius = radius;
+    this.operationManager = operationManager;
   }
 
   public Raylib.Color getColor() {
@@ -31,7 +43,8 @@ public class Eraser implements Tool {
   public void onPointerDown(int x, int y) {
     pointerDown = true;
 
-    canvas.drawCircle(x, y, radius, getColor(), BlendingMode.LINEAR_SUBTRACTIVE_ERASE);
+    previewManager.setPreviewBlending(BlendingMode.LINEAR_SUBTRACTIVE_ERASE);
+    previewCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
 
     previousX = x;
     previousY = y;
@@ -41,17 +54,10 @@ public class Eraser implements Tool {
   public void onPointerMove(int x, int y) {
     if (!pointerDown) return;
 
-    canvas.drawCircle(x, y, radius, getColor(), BlendingMode.LINEAR_SUBTRACTIVE_ERASE);
-    canvas.drawLine(
-        previousX,
-        previousY,
-        x,
-        y,
-        radius * 2.0f,
-        getColor(),
-        BlendingMode.LINEAR_SUBTRACTIVE_ERASE);
-    canvas.drawCircle(
-        previousX, previousY, radius, getColor(), BlendingMode.LINEAR_SUBTRACTIVE_ERASE);
+    previewCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
+    previewCanvas.drawLine(
+        previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
+    previewCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
 
     previousX = x;
     previousY = y;
@@ -59,10 +65,19 @@ public class Eraser implements Tool {
 
   @Override
   public void onPointerUp() {
+    Operation operation =
+        new CanvasDrawOperation(
+            canvas, BlendingMode.LINEAR_SUBTRACTIVE_ERASE, previewCanvas.getTexture());
+
+    operationManager.addOperation(operation);
+
     pointerDown = false;
 
     previousX = null;
     previousY = null;
+
+    previewManager.setPreviewBlending(BlendingMode.NORMAL);
+    previewCanvas.clear();
   }
 
   @Override

@@ -7,6 +7,14 @@ public interface Canvas {
 
   int getHeight();
 
+  void dispose();
+
+  void clear();
+
+  Canvas clone();
+
+  Raylib.Texture getTexture();
+
   void drawCircle(int x, int y, float radius, Raylib.Color color, BlendingMode blendingMode);
 
   void drawLine(
@@ -17,6 +25,12 @@ public interface Canvas {
       float diameter,
       Raylib.Color color,
       BlendingMode blendingMode);
-  //    void drawImage();
-  //    void drawTexture();
+
+  void drawTexture(
+      Raylib.Texture texture,
+      float x,
+      float y,
+      float width,
+      float height,
+      BlendingMode blendingMode);
 }

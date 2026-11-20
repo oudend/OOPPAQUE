@@ -17,6 +17,13 @@ public class RaylibCanvas implements Canvas {
     renderTexture = LoadRenderTexture(this.width, this.height);
   }
 
+  public static RaylibCanvas fromTexture(Texture texture) {
+    RaylibCanvas canvas = new RaylibCanvas(texture.width(), texture.height());
+    canvas.drawTexture(texture, 0, 0, texture.width(), texture.height(), BlendingMode.REPLACE);
+
+    return canvas;
+  }
+
   @Override
   public Texture getTexture() {
     return renderTexture.texture();

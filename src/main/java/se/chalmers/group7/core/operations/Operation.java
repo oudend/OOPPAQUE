@@ -2,11 +2,16 @@ package se.chalmers.group7.core.operations;
 
 public abstract class Operation {
 
-  private boolean executed = false;
+  private boolean executed;
   private final long timestamp;
 
-  public Operation() {
+  public Operation(boolean executed) {
+    this.executed = executed;
     this.timestamp = System.currentTimeMillis();
+  }
+
+  public Operation() {
+    this(false);
   }
 
   public long getTimestamp() {

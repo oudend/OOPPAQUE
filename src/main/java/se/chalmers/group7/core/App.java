@@ -3,141 +3,77 @@ package se.chalmers.group7.core;
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
-import se.chalmers.group7.core.canvas.BlendingMode;
-import se.chalmers.group7.core.canvas.RaylibCanvas;
-import se.chalmers.group7.core.layers.LayerManager;
-import se.chalmers.group7.core.layers.LayerPreviewManager;
-import se.chalmers.group7.core.layers.PixelLayer;
-import se.chalmers.group7.core.operations.OperationManager;
-import se.chalmers.group7.core.rendering.Camera;
-import se.chalmers.group7.core.rendering.LayerRenderer;
-import se.chalmers.group7.core.rendering.SquarePatternRenderer;
-import se.chalmers.group7.core.tools.*;
+import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
+import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
+import se.chalmers.group7.core.ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.InputManager;
+import se.chalmers.group7.core.ui.model.*;
+import se.chalmers.group7.core.ui.view.LayoutComposer;
 
 public class App {
+  private final boolean debug;
 
   private final int width;
   private final int height;
 
-  private Tool selectedTool;
+  private final InputManager inputManager = new InputManager();
+  private final LayoutComposer layoutComposer;
+  private final LayoutBlock root;
 
-  private final LayerPreviewManager previewManager;
-  private final LayerRenderer layerRenderer;
-  private final LayerManager layerManager;
+  public App(int width, int height, boolean debug) {
+    this.debug = debug;
 
-  private boolean mouseDown = false;
-
-  private Vector2 previousMousePosition = Vector2Zero();
-
-  private final OperationManager operationManager = new OperationManager();
-
-  private final SquarePatternRenderer transparencyPatternRenderer;
-
-  private final Tool[] tools;
-  private Camera camera = new Camera();
-
-  public App(int width, int height) {
     this.width = width;
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
-    SetTargetFPS(60);
+    SetTargetFPS(6000);
 
-    layerManager = new LayerManager();
+    BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height, 0, 0);
 
-    transparencyPatternRenderer = new SquarePatternRenderer();
+    BoxBlock canvasBox =
+        new BoxBlock(
+            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+            width,
+            height,
+            0,
+            0);
 
-    //    layerManager.addLayer(getTransparencyLayer());
-    layerManager.addLayer(new PixelLayer(this.width, this.height));
+    rootBox.addChild(canvasBox);
 
-    layerManager.addLayer(new PixelLayer(this.width, this.height));
+    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
+    canvas.addAction(new ACanvasInput(canvas, debug));
+    canvasBox.addChild(canvas);
 
-    layerManager.setActiveLayer(0);
+    root = rootBox;
+    if (debug) {
+      root.addAction(
+          new Action() {
+            @Override
+            public void executeAction(Input input) {
+              if (IsKeyDown(KEY_M)) {
+                rlCheckErrors();
+              }
+            }
+          });
+    }
+    LayoutLayer layer = new LayoutLayer(root, 0, 0, width, height);
 
-    previewManager =
-        new LayerPreviewManager(new RaylibCanvas(this.width, this.height), BlendingMode.NORMAL);
-
-    layerRenderer = new LayerRenderer(layerManager, previewManager, this.width, this.height);
-
-    tools =
-        new Tool[] {
-          new Brush(layerManager, previewManager, operationManager, camera, 10),
-          new Eraser(layerManager, previewManager, operationManager, camera, 10),
-          new PanningTool(camera, operationManager),
-          new MoveTool(layerManager, operationManager, camera)
-        };
-
-    selectedTool = tools[0];
-  }
-
-  private void render() {
-    BeginDrawing();
-    ClearBackground(
-        DARKGRAY); // not necessary since the transparent pattern is writing over all pixels
-
-    transparencyPatternRenderer.render(camera, width, height);
-
-    layerRenderer.render(camera);
-
-    DrawTexturePro(
-        layerRenderer.getTexture(),
-        new Rectangle().x(0).y(0).width(width).height(-height),
-        new Rectangle().x(0).y(0).width(width).height(height),
-        Vector2Zero(),
-        0,
-        WHITE);
-
-    //    DrawTexture(layerRenderer.getTexture(), width, -height, WHITE);
-
-    DrawFPS(20, 20);
-
-    EndDrawing();
+    layoutComposer = new LayoutComposer();
+    layoutComposer.addLayer(layer);
   }
 
   public void run() {
     while (!WindowShouldClose()) {
-      render();
+      Input input = inputManager.getInput();
+      root.evaluateInput(input);
 
-      Vector2 mousePosition = GetMousePosition();
-
-      if (IsKeyDown(KEY_A)) {
-        selectedTool = tools[0];
-      } else if (IsKeyDown(KEY_W)) {
-        selectedTool = tools[1];
-      } else if (IsKeyDown(KEY_M)) {
-        selectedTool = tools[2];
-      } else if (IsKeyDown(KEY_V)) {
-        selectedTool = tools[3];
+      if (debug) {
+        layoutComposer.drawWithFPS();
+      } else {
+        layoutComposer.draw();
       }
-
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !mouseDown) {
-        selectedTool.onPointerDown((int) mousePosition.x(), (int) mousePosition.y());
-        mouseDown = true;
-      }
-
-      if (IsMouseButtonUp(MOUSE_BUTTON_LEFT) && mouseDown) {
-        selectedTool.onPointerUp();
-        mouseDown = false;
-      }
-
-      if (Vector2Distance(previousMousePosition, mousePosition) > 0.5f) {
-        previousMousePosition = mousePosition;
-        selectedTool.onPointerMove((int) mousePosition.x(), (int) mousePosition.y());
-      }
-
-      if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z)) {
-        operationManager.undo();
-      }
-
-      if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
-        operationManager.redo();
-      }
-
-      camera.zoomAt(
-          width / 2f,
-          height / 2f,
-          Math.clamp(
-              camera.getZoom() + GetMouseWheelMove() * 0.1f * camera.getZoom(), 0.2f, 1000.0f));
     }
+    CloseWindow();
   }
 }

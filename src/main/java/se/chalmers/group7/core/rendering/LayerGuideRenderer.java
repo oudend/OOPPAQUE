@@ -47,7 +47,7 @@ public class LayerGuideRenderer {
           camera.worldToScreen(handle.worldCoords().x(), handle.worldCoords().y());
 
       Raylib.DrawCircleV(screenPoint, 6f, BLUE);
-      Raylib.DrawCircleV(screenPoint, 5f, WHITE);
+      Raylib.DrawCircleV(screenPoint, 4f, WHITE);
     }
   }
 }

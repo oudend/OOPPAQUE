@@ -2,177 +2,78 @@ package se.chalmers.group7.core;
 
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
-import static se.chalmers.group7.core.canvas.utils.RaylibBlendModes.applyBlendMode;
 
-import se.chalmers.group7.core.canvas.BlendingMode;
-import se.chalmers.group7.core.canvas.RaylibCanvas;
-import se.chalmers.group7.core.operations.OperationManager;
-import se.chalmers.group7.core.temp.PreviewManager;
-import se.chalmers.group7.core.tools.Brush;
-import se.chalmers.group7.core.tools.Eraser;
-import se.chalmers.group7.core.tools.Tool;
+import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
+import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
+import se.chalmers.group7.core.ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.InputManager;
+import se.chalmers.group7.core.ui.model.*;
+import se.chalmers.group7.core.ui.view.LayoutComposer;
 
 public class App {
+  private final boolean debug;
 
   private final int width;
   private final int height;
 
-  private Tool selectedTool;
+  private final InputManager inputManager = new InputManager();
+  private final LayoutComposer layoutComposer;
+  private final LayoutBlock root;
 
-  private final RaylibCanvas selectedLayer;
+  public App(int width, int height, boolean debug) {
+    this.debug = debug;
 
-  private final RenderTexture compositeTexture;
-
-  private final PreviewManager previewManager;
-  private final RaylibCanvas previewLayer;
-
-  private boolean mouseDown = false;
-
-  private Vector2 previousMousePosition = Vector2Zero();
-
-  private final OperationManager operationManager = new OperationManager();
-
-  private final Tool[] tools;
-
-  public App(int width, int height) {
     this.width = width;
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
     SetTargetFPS(6000);
 
-    selectedLayer = new RaylibCanvas(this.width, this.height);
+    BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height, 0, 0);
 
-    previewManager =
-        new PreviewManager(new RaylibCanvas(this.width, this.height), BlendingMode.NORMAL);
+    BoxBlock canvasBox =
+        new BoxBlock(
+            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+            width,
+            height,
+            0,
+            0);
 
-    previewLayer = previewManager.getPreviewLayer();
+    rootBox.addChild(canvasBox);
 
-    tools =
-        new Tool[] {
-          new Brush(selectedLayer, previewManager, operationManager, 20),
-          new Eraser(selectedLayer, previewManager, operationManager, 20)
-        };
+    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
+    canvas.addAction(new ACanvasInput(canvas, debug));
+    canvasBox.addChild(canvas);
 
-    selectedTool = tools[0];
+    root = rootBox;
+    if (debug) {
+      root.addAction(
+          new Action() {
+            @Override
+            public void executeAction(Input input) {
+              if (IsKeyDown(KEY_M)) {
+                rlCheckErrors();
+              }
+            }
+          });
+    }
+    LayoutLayer layer = new LayoutLayer(root, 0, 0, width, height);
 
-    compositeTexture = LoadRenderTexture(this.width, this.height);
-
-    createTransparencyPattern();
-  }
-
-  private RenderTexture transparencyPattern;
-
-  private void createTransparencyPattern() {
-    transparencyPattern = LoadRenderTexture(20, 20);
-
-    BeginTextureMode(transparencyPattern);
-
-    ClearBackground(BLANK);
-
-    DrawRectangle(0, 0, 10, 10, GRAY);
-    DrawRectangle(10, 10, 10, 10, GRAY);
-
-    EndTextureMode();
-
-    SetTextureWrap(transparencyPattern.texture(), TEXTURE_WRAP_REPEAT);
-  }
-
-  private void renderComposite() {
-    Rectangle srcRect =
-        new Rectangle()
-            .x(0.0f)
-            .y(0.0f)
-            .width((float) selectedLayer.getWidth())
-            .height((float) -selectedLayer.getHeight());
-
-    BeginTextureMode(compositeTexture); // your pre-allocated scratch RenderTexture
-    ClearBackground(BLANK);
-
-    // Exact copy of selectedLayer (RGB + Alpha) using your existing REPLACE mode
-    applyBlendMode(BlendingMode.REPLACE);
-    DrawTextureRec(selectedLayer.getTexture(), srcRect, Vector2Zero(), WHITE);
-    EndBlendMode();
-
-    // Now apply previewLayer onto the layer's alpha!
-    Rectangle previewRect =
-        new Rectangle()
-            .x(0.0f)
-            .y(0.0f)
-            .width((float) previewLayer.getWidth())
-            .height((float) -previewLayer.getHeight());
-    applyBlendMode(previewManager.getPreviewBlending());
-    DrawTextureRec(previewLayer.getTexture(), previewRect, Vector2Zero(), WHITE);
-    EndBlendMode();
-    EndTextureMode();
-
-    DrawTextureRec(compositeTexture.texture(), srcRect, Vector2Zero(), WHITE);
+    layoutComposer = new LayoutComposer();
+    layoutComposer.addLayer(layer);
   }
 
   public void run() {
     while (!WindowShouldClose()) {
-      BeginDrawing();
-      ClearBackground(
-          RAYWHITE); // not necessary since the transparent pattern is writing over all pixels
-      // anyway.
+      Input input = inputManager.getInput();
+      root.evaluateInput(input);
 
-      // Renders transparent pattern
-      applyBlendMode(BlendingMode.NORMAL);
-      DrawTexturePro(
-          transparencyPattern.texture(),
-          new Rectangle().x(0).y(0).width(width / 20.0f * 15.0f).height(height / 20.0f * 15.0f),
-          new Rectangle().x(0).y(0).width(width).height(height),
-          Vector2Zero(),
-          0,
-          WHITE);
-      EndBlendMode();
-
-      if (IsKeyDown(KEY_M)) {
-        rlCheckErrors();
-      }
-
-      if (!IsKeyDown(KEY_K)) renderComposite();
-
-      if (IsKeyDown(KEY_M)) {
-        System.out.println(IsTextureValid(transparencyPattern.texture()));
-
-        rlCheckErrors();
-      }
-
-      DrawFPS(20, 20);
-
-      EndDrawing();
-
-      Vector2 mousePosition = GetMousePosition();
-
-      if (IsKeyDown(KEY_W)) {
-        selectedTool = tools[1];
-      } else if (IsKeyUp(KEY_W)) {
-        selectedTool = tools[0];
-      }
-
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !mouseDown) {
-        selectedTool.onPointerDown((int) mousePosition.x(), (int) mousePosition.y());
-        mouseDown = true;
-      }
-
-      if (IsMouseButtonUp(MOUSE_BUTTON_LEFT) && mouseDown) {
-        selectedTool.onPointerUp();
-        mouseDown = false;
-      }
-
-      if (Vector2Distance(previousMousePosition, mousePosition) > 1) {
-        previousMousePosition = mousePosition;
-        selectedTool.onPointerMove((int) mousePosition.x(), (int) mousePosition.y());
-      }
-
-      if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z)) {
-        operationManager.undo();
-      }
-
-      if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
-        operationManager.redo();
+      if (debug) {
+        layoutComposer.drawWithFPS();
+      } else {
+        layoutComposer.draw();
       }
     }
+    CloseWindow();
   }
 }

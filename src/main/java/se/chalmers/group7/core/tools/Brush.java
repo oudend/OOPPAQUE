@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
+import static com.raylib.Raylib.GetFrameTime;
 
 import com.raylib.Raylib;
 import se.chalmers.group7.core.canvas.BlendingMode;
@@ -12,6 +13,7 @@ import se.chalmers.group7.core.operations.CanvasDrawOperation;
 import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public class Brush implements Tool {
 
@@ -40,6 +42,20 @@ public class Brush implements Tool {
   }
 
   @Override
+  public void onInput(Input input) {
+    if (input.mouseLeft().down()) {
+      onPointerDown(input.xPos(), input.yPos());
+    }
+
+    if (input.mouseLeft().released()) {
+      onPointerUp();
+    }
+
+    if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) > GetFrameTime()) {
+      onPointerMove(input.xPos(), input.yPos());
+    }
+  }
+
   public void onPointerDown(int x, int y) {
     pointerDown = true;
 
@@ -60,7 +76,6 @@ public class Brush implements Tool {
     previousY = (int) layerCoords.y();
   }
 
-  @Override
   public void onPointerMove(int x, int y) {
     if (!pointerDown) return;
 
@@ -90,7 +105,6 @@ public class Brush implements Tool {
     previousY = (int) layerCoords.y();
   }
 
-  @Override
   public void onPointerUp() {
     Operation operation =
         new CanvasDrawOperation(
@@ -107,7 +121,10 @@ public class Brush implements Tool {
   }
 
   @Override
+  public void onSelected() {}
+
+  @Override
   public void deactivate() {
-    // not really handle-able right now
+    onPointerUp();
   }
 }

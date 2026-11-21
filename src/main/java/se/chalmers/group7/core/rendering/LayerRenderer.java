@@ -137,7 +137,9 @@ public class LayerRenderer {
   private void renderLayer(Layer layer, Camera camera, boolean active) {
     Raylib.Texture compositeTexture = layer.getCanvas().getTexture();
 
+    BeginTextureMode(renderTexture);
     renderLayerComposite(layer, active, compositeTexture, camera);
+    EndTextureMode();
   }
 
   private void renderLayer(

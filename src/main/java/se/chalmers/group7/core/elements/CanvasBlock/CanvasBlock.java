@@ -16,23 +16,20 @@ import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerRenderer;
 import se.chalmers.group7.core.rendering.SquarePatternRenderer;
 import se.chalmers.group7.core.tools.*;
+import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.model.LayoutBlock;
 
 public class CanvasBlock extends LayoutBlock {
-  private Tool selectedTool;
-
   private final RenderTexture compositeTexture;
 
   private final LayerPreviewManager previewManager;
 
-  private RenderTexture transparencyPattern;
-
   private final LayerManager layerManager;
+
   private final OperationManager operationManager = new OperationManager();
+  private final ToolManager toolManager = new ToolManager();
 
   private final LayerRenderer layerRenderer;
-
-  private final Tool[] tools;
 
   private final Camera camera = new Camera();
 
@@ -62,17 +59,36 @@ public class CanvasBlock extends LayoutBlock {
 
     layerRenderer = new LayerRenderer(layerManager, previewManager, this.width, this.height);
 
-    tools =
-        new Tool[] {
-          new Brush(layerManager, previewManager, operationManager, camera, 10),
-          new Eraser(layerManager, previewManager, operationManager, camera, 10),
-          new PanningTool(camera, operationManager),
-          new MoveTool(layerManager, operationManager, camera)
-        };
-
-    setSelectedTool(0);
+    toolManager.addTool(
+        new Brush(layerManager, previewManager, operationManager, camera, 10), "brush");
+    toolManager.addTool(
+        new Eraser(layerManager, previewManager, operationManager, camera, 10), "eraser");
+    toolManager.addTool(new PanningTool(camera, operationManager), "pan");
+    toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 
     compositeTexture = LoadRenderTexture(width, height);
+  }
+
+  public void onInput(Input input) {
+    if (IsKeyDown(KEY_A)) {
+      toolManager.setActive("brush");
+    } else if (IsKeyDown(KEY_W)) {
+      toolManager.setActive("eraser");
+    } else if (IsKeyDown(KEY_M)) {
+      toolManager.setActive("pan");
+    } else if (IsKeyDown(KEY_V)) {
+      toolManager.setActive("move");
+    }
+
+    toolManager.onInput(input);
+
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Z)) {
+      operationManager.undo();
+    }
+
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_Y)) {
+      operationManager.redo();
+    }
   }
 
   public void draw(int xPos, int yPos) {
@@ -106,21 +122,5 @@ public class CanvasBlock extends LayoutBlock {
         WHITE);
 
     EndTextureMode();
-  }
-
-  public void setSelectedTool(int toolIndex) {
-    selectedTool = tools[toolIndex];
-  }
-
-  public RenderTexture getTransparencyPattern() {
-    return transparencyPattern;
-  }
-
-  public Tool getSelectedTool() {
-    return selectedTool;
-  }
-
-  public OperationManager getOperationManager() {
-    return operationManager;
   }
 }

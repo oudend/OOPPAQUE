@@ -1,5 +1,7 @@
 package se.chalmers.group7.core.tools;
 
+import static com.raylib.Raylib.GetFrameTime;
+
 import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
@@ -8,6 +10,7 @@ import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.operations.LayerTransformOperation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public class MoveTool implements Tool {
   private enum TransformType {
@@ -58,6 +61,20 @@ public class MoveTool implements Tool {
   }
 
   @Override
+  public void onInput(Input input) {
+    if (input.mouseLeft().down()) {
+      onPointerDown(input.xPos(), input.yPos());
+    }
+
+    if (input.mouseLeft().released()) {
+      onPointerUp();
+    }
+
+    if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) > GetFrameTime()) {
+      onPointerMove(input.xPos(), input.yPos());
+    }
+  }
+
   public void onPointerDown(int x, int y) {
     Raylib.Vector2 worldVector = camera.screenToWorld(x, y);
     Raylib.Vector2 screenVector = new Raylib.Vector2().x(x).y(y);
@@ -101,7 +118,6 @@ public class MoveTool implements Tool {
     previousY = y;
   }
 
-  @Override
   public void onPointerMove(int x, int y) {
     if (activeLayerIndex == -1) return;
 
@@ -141,7 +157,6 @@ public class MoveTool implements Tool {
     previousY = y;
   }
 
-  @Override
   public void onPointerUp() {
     if (activeLayerIndex == -1) return;
 
@@ -161,7 +176,6 @@ public class MoveTool implements Tool {
 
   @Override
   public void deactivate() {
-
     reset();
   }
 
@@ -170,6 +184,9 @@ public class MoveTool implements Tool {
     activeHandle = null;
     activeLayerIndex = -1;
   }
+
+  @Override
+  public void onSelected() {}
 
   // mostly ai assisted math
   private void resizeLayer(Layer layer, int mouseX, int mouseY) {

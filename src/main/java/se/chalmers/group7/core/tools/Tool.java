@@ -5,12 +5,12 @@ package se.chalmers.group7.core.tools;
 // void onSelect();
 // void onDeactivate();
 
+import se.chalmers.group7.core.ui.controller.Input;
+
 public interface Tool {
-  void onPointerDown(int x, int y);
+  void onInput(Input input);
 
-  void onPointerMove(int x, int y);
-
-  void onPointerUp();
+  void onSelected();
 
   void deactivate();
 }

@@ -1,7 +1,10 @@
 package se.chalmers.group7.core.tools;
 
+import static com.raylib.Raylib.GetFrameTime;
+
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public class PanningTool implements Tool {
 
@@ -22,6 +25,20 @@ public class PanningTool implements Tool {
   }
 
   @Override
+  public void onInput(Input input) {
+    if (input.mouseLeft().down()) {
+      onPointerDown(input.xPos(), input.yPos());
+    }
+
+    if (input.mouseLeft().released()) {
+      onPointerUp();
+    }
+
+    if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) > GetFrameTime()) {
+      onPointerMove(input.xPos(), input.yPos());
+    }
+  }
+
   public void onPointerDown(int x, int y) {
     previousX = x;
     previousY = y;
@@ -33,7 +50,6 @@ public class PanningTool implements Tool {
     dragging = true;
   }
 
-  @Override
   public void onPointerMove(int x, int y) {
     if (!dragging) return;
 
@@ -50,7 +66,6 @@ public class PanningTool implements Tool {
     previousY = y;
   }
 
-  @Override
   public void onPointerUp() {
     if (!dragging) return;
 
@@ -79,4 +94,7 @@ public class PanningTool implements Tool {
   public void deactivate() {
     dragging = false;
   }
+
+  @Override
+  public void onSelected() {}
 }

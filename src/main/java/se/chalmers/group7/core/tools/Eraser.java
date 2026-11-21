@@ -2,6 +2,7 @@ package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.WHITE;
 import static com.raylib.Raylib.ColorAlpha;
+import static com.raylib.Raylib.GetFrameTime;
 
 import com.raylib.Raylib;
 import se.chalmers.group7.core.canvas.BlendingMode;
@@ -14,6 +15,7 @@ import se.chalmers.group7.core.operations.CanvasDrawOperation;
 import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.ui.controller.Input;
 
 public class Eraser implements Tool {
 
@@ -45,11 +47,25 @@ public class Eraser implements Tool {
     this.operationManager = operationManager;
   }
 
+  @Override
+  public void onInput(Input input) {
+    if (input.mouseLeft().down()) {
+      onPointerDown(input.xPos(), input.yPos());
+    }
+
+    if (input.mouseLeft().released()) {
+      onPointerUp();
+    }
+
+    if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) > GetFrameTime()) {
+      onPointerMove(input.xPos(), input.yPos());
+    }
+  }
+
   public Raylib.Color getColor() {
     return ColorAlpha(WHITE, opacity);
   }
 
-  @Override
   public void onPointerDown(int x, int y) {
     pointerDown = true;
 
@@ -70,7 +86,6 @@ public class Eraser implements Tool {
     previousY = (int) layerCoords.y();
   }
 
-  @Override
   public void onPointerMove(int x, int y) {
     if (!pointerDown) return;
 
@@ -94,7 +109,6 @@ public class Eraser implements Tool {
     previousY = (int) layerCoords.y();
   }
 
-  @Override
   public void onPointerUp() {
     Operation operation =
         new CanvasDrawOperation(
@@ -115,6 +129,9 @@ public class Eraser implements Tool {
 
   @Override
   public void deactivate() {
-    // not really handle-able right now
+    onPointerUp();
   }
+
+  @Override
+  public void onSelected() {}
 }

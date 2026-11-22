@@ -2,20 +2,24 @@ package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
 
+import com.raylib.Raylib;
 import com.raylib.Raylib.Color;
 import se.chalmers.group7.core.canvas.BlendingMode;
-import se.chalmers.group7.core.canvas.Canvas;
+import se.chalmers.group7.core.canvas.RaylibCanvas;
+import se.chalmers.group7.core.layers.Layer;
+import se.chalmers.group7.core.layers.LayerManager;
+import se.chalmers.group7.core.layers.LayerPreviewManager;
 import se.chalmers.group7.core.operations.CanvasDrawOperation;
 import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
-import se.chalmers.group7.core.temp.PreviewManager;
+import se.chalmers.group7.core.rendering.Camera;
 
 public class Brush implements Tool {
 
   private final OperationManager operationManager;
-  private final Canvas canvas;
-  private PreviewManager previewManager;
-  private Canvas previewCanvas;
+  private final LayerManager layerManager;
+  private LayerPreviewManager previewManager;
+  private final Camera camera;
   private int radius;
 
   private Integer previousX;
@@ -26,10 +30,14 @@ public class Brush implements Tool {
   private Color drawColor = BLACK;
 
   public Brush(
-      Canvas canvas, PreviewManager previewManager, OperationManager operationManager, int radius) {
-    this.canvas = canvas;
+      LayerManager layerManager,
+      LayerPreviewManager previewManager,
+      OperationManager operationManager,
+      Camera camera,
+      int radius) {
+    this.layerManager = layerManager;
     this.previewManager = previewManager;
-    this.previewCanvas = previewManager.getPreviewLayer();
+    this.camera = camera;
     this.radius = radius;
     this.operationManager = operationManager;
   }
@@ -38,30 +46,58 @@ public class Brush implements Tool {
   public void onPointerDown(int x, int y) {
     pointerDown = true;
 
-    previewManager.setPreviewBlending(BlendingMode.NORMAL);
-    previewCanvas.drawCircle(x, y, radius, drawColor, BlendingMode.NORMAL);
+    Layer activeLayer = layerManager.getActiveLayer();
 
-    previousX = x;
-    previousY = y;
+    previewManager.setPreviewCanvas(
+        new RaylibCanvas(activeLayer.getWidth(), activeLayer.getHeight()));
+    previewManager.setPreviewBlending(BlendingMode.NORMAL);
+
+    Raylib.Vector2 layerCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
+
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(
+            (int) layerCoords.x(), (int) layerCoords.y(), radius, drawColor, BlendingMode.NORMAL);
+
+    previousX = (int) layerCoords.x();
+    previousY = (int) layerCoords.y();
   }
 
   @Override
   public void onPointerMove(int x, int y) {
     if (!pointerDown) return;
 
-    previewCanvas.drawCircle(x, y, radius, drawColor, BlendingMode.NORMAL);
-    previewCanvas.drawLine(
-        previousX, previousY, x, y, radius * 2.0f, drawColor, BlendingMode.NORMAL);
-    previewCanvas.drawCircle(previousX, previousY, radius, drawColor, BlendingMode.NORMAL);
+    Layer activeLayer = layerManager.getActiveLayer();
 
-    previousX = x;
-    previousY = y;
+    Raylib.Vector2 layerCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
+
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(
+            (int) layerCoords.x(), (int) layerCoords.y(), radius, drawColor, BlendingMode.NORMAL);
+    previewManager
+        .getPreviewCanvas()
+        .drawLine(
+            previousX,
+            previousY,
+            (int) layerCoords.x(),
+            (int) layerCoords.y(),
+            radius * 2.0f,
+            drawColor,
+            BlendingMode.NORMAL);
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(previousX, previousY, radius, drawColor, BlendingMode.NORMAL);
+
+    previousX = (int) layerCoords.x();
+    previousY = (int) layerCoords.y();
   }
 
   @Override
   public void onPointerUp() {
     Operation operation =
-        new CanvasDrawOperation(canvas, BlendingMode.NORMAL, previewCanvas.getTexture());
+        new CanvasDrawOperation(
+            layerManager.getActiveCanvas(), BlendingMode.NORMAL, previewManager.getTexture());
 
     operationManager.addOperation(operation);
 
@@ -70,7 +106,7 @@ public class Brush implements Tool {
     previousX = null;
     previousY = null;
 
-    previewCanvas.clear();
+    previewManager.clear();
   }
 
   @Override

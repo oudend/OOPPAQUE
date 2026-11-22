@@ -1,37 +1,42 @@
 package se.chalmers.group7.core.elements.CanvasBlock;
 
 import static com.raylib.Colors.*;
-import static com.raylib.Colors.GRAY;
 import static com.raylib.Raylib.*;
-import static se.chalmers.group7.core.canvas.utils.RaylibBlendModes.applyBlendMode;
 
 import com.raylib.Raylib;
 import com.raylib.Raylib.RenderTexture;
 import java.util.ArrayList;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.RaylibCanvas;
+import se.chalmers.group7.core.layers.LayerManager;
+import se.chalmers.group7.core.layers.LayerPreviewManager;
+import se.chalmers.group7.core.layers.PixelLayer;
 import se.chalmers.group7.core.operations.OperationManager;
-import se.chalmers.group7.core.temp.PreviewManager;
-import se.chalmers.group7.core.tools.Brush;
-import se.chalmers.group7.core.tools.Eraser;
-import se.chalmers.group7.core.tools.Tool;
+import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.rendering.LayerRenderer;
+import se.chalmers.group7.core.rendering.SquarePatternRenderer;
+import se.chalmers.group7.core.tools.*;
 import se.chalmers.group7.core.ui.model.LayoutBlock;
 
 public class CanvasBlock extends LayoutBlock {
   private Tool selectedTool;
 
-  private final RaylibCanvas selectedLayer;
-
   private final RenderTexture compositeTexture;
 
-  private final PreviewManager previewManager;
-  private final RaylibCanvas previewLayer;
+  private final LayerPreviewManager previewManager;
 
   private RenderTexture transparencyPattern;
 
+  private final LayerManager layerManager;
   private final OperationManager operationManager = new OperationManager();
 
+  private final LayerRenderer layerRenderer;
+
   private final Tool[] tools;
+
+  private final Camera camera = new Camera();
+
+  private final SquarePatternRenderer transparencyPatternRenderer;
 
   public CanvasBlock(int width, int height, int xPos, int yPos) {
     this.actions = new ArrayList<>();
@@ -41,89 +46,66 @@ public class CanvasBlock extends LayoutBlock {
     this.xPos = xPos;
     this.yPos = yPos;
 
-    selectedLayer = new RaylibCanvas(width, height);
+    layerManager = new LayerManager();
 
-    previewManager = new PreviewManager(new RaylibCanvas(width, height), BlendingMode.NORMAL);
+    transparencyPatternRenderer = new SquarePatternRenderer();
 
-    previewLayer = previewManager.getPreviewLayer();
+    //    layerManager.addLayer(getTransparencyLayer());
+    layerManager.addLayer(new PixelLayer(this.width, this.height));
+
+    layerManager.addLayer(new PixelLayer(this.width, this.height));
+
+    layerManager.setActiveLayer(0);
+
+    previewManager =
+        new LayerPreviewManager(new RaylibCanvas(this.width, this.height), BlendingMode.NORMAL);
+
+    layerRenderer = new LayerRenderer(layerManager, previewManager, this.width, this.height);
 
     tools =
         new Tool[] {
-          new Brush(selectedLayer, previewManager, operationManager, 20),
-          new Eraser(selectedLayer, previewManager, operationManager, 20)
+          new Brush(layerManager, previewManager, operationManager, camera, 10),
+          new Eraser(layerManager, previewManager, operationManager, camera, 10),
+          new PanningTool(camera, operationManager),
+          new MoveTool(layerManager, operationManager, camera)
         };
 
     setSelectedTool(0);
 
     compositeTexture = LoadRenderTexture(width, height);
-
-    createTransparencyPattern();
   }
 
   public void draw(int xPos, int yPos) {
     Raylib.Rectangle srcRect =
-        new Raylib.Rectangle()
-            .x(0.0f)
-            .y(0.0f)
-            .width((float) selectedLayer.getWidth())
-            .height((float) -selectedLayer.getHeight());
-
-    // Renders transparent pattern
-    applyBlendMode(BlendingMode.NORMAL);
-    DrawTexturePro(
-        transparencyPattern.texture(),
-        new Rectangle().x(0).y(0).width(width / 20.0f * 15.0f).height(height / 20.0f * 15.0f),
-        new Rectangle().x(xPos).y(yPos).width(width).height(height),
-        Vector2Zero(),
-        0,
-        WHITE);
-    EndBlendMode();
+        new Raylib.Rectangle().x(0.0f).y(0.0f).width((float) width).height((float) -height);
 
     DrawTextureRec(compositeTexture.texture(), srcRect, new Vector2().x(xPos).y(yPos), WHITE);
+
+    camera.zoomAt(
+        width / 2f,
+        height / 2f,
+        Math.clamp(
+            camera.getZoom() + GetMouseWheelMove() * 0.1f * camera.getZoom(), 0.2f, 1000.0f));
   }
 
   public void prepareComposite() {
-    Raylib.Rectangle srcRect =
-        new Raylib.Rectangle()
-            .x(0.0f)
-            .y(0.0f)
-            .width((float) selectedLayer.getWidth())
-            .height((float) -selectedLayer.getHeight());
+    layerRenderer.render(camera);
 
-    BeginTextureMode(compositeTexture); // your pre-allocated scratch RenderTexture
-    ClearBackground(BLANK);
+    BeginTextureMode(compositeTexture);
+    ClearBackground(
+        DARKGRAY); // not necessary since the transparent pattern is writing over all pixels
 
-    // Exact copy of selectedLayer (RGB + Alpha) using your existing REPLACE mode
-    applyBlendMode(BlendingMode.REPLACE);
-    DrawTextureRec(selectedLayer.getTexture(), srcRect, Vector2Zero(), WHITE);
-    EndBlendMode();
+    transparencyPatternRenderer.render(camera, width, height);
 
-    // Now apply previewLayer onto the layer's alpha!
-    Rectangle previewRect =
-        new Rectangle()
-            .x(0.0f)
-            .y(0.0f)
-            .width((float) previewLayer.getWidth())
-            .height((float) -previewLayer.getHeight());
-    applyBlendMode(previewManager.getPreviewBlending());
-    DrawTextureRec(previewLayer.getTexture(), previewRect, Vector2Zero(), WHITE);
-    EndBlendMode();
-    EndTextureMode();
-  }
-
-  private void createTransparencyPattern() {
-    transparencyPattern = LoadRenderTexture(20, 20);
-
-    BeginTextureMode(transparencyPattern);
-
-    ClearBackground(BLANK);
-
-    DrawRectangle(0, 0, 10, 10, GRAY);
-    DrawRectangle(10, 10, 10, 10, GRAY);
+    DrawTexturePro(
+        layerRenderer.getTexture(),
+        new Rectangle().x(0).y(0).width(width).height(-height),
+        new Rectangle().x(0).y(0).width(width).height(height),
+        Vector2Zero(),
+        0,
+        WHITE);
 
     EndTextureMode();
-
-    SetTextureWrap(transparencyPattern.texture(), TEXTURE_WRAP_REPEAT);
   }
 
   public void setSelectedTool(int toolIndex) {

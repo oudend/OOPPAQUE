@@ -124,11 +124,11 @@ public class LayerRenderer {
 
     Raylib.EndBlendMode();
 
-    if (active) {
-      LayerGuideRenderer.render(camera, layer);
-      //      RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f,
-      // BLACK);
-    }
+    //    if (active) {
+    //      LayerGuideRenderer.render(camera, layer);
+    //      //      RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f,
+    //      // BLACK);
+    //    }
   }
 
   private void renderLayer(Layer layer, Camera camera, boolean active) {

@@ -10,9 +10,9 @@ public record Input(
     Set<Integer> keyCodes,
     float deltaX,
     float deltaY,
-    mouseButton mouseLeft,
-    mouseButton mouseRight,
-    mouseButton mouseMiddle) {
+    Button mouseLeft,
+    Button mouseRight,
+    Button mouseMiddle) {
   public Input enterArea(int x, int y) {
     return new Input(
         this.globalX - x,

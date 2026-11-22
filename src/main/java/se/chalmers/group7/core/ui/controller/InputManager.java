@@ -31,15 +31,15 @@ public class InputManager {
         keyCodes,
         mouseDelta.x(),
         mouseDelta.y(),
-        new mouseButton(
+        new Button(
             IsMouseButtonPressed(MOUSE_BUTTON_LEFT),
             IsMouseButtonDown(MOUSE_BUTTON_LEFT),
             IsMouseButtonReleased(MOUSE_BUTTON_LEFT)),
-        new mouseButton(
+        new Button(
             IsMouseButtonPressed(MOUSE_BUTTON_RIGHT),
             IsMouseButtonDown(MOUSE_BUTTON_RIGHT),
             IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)),
-        new mouseButton(
+        new Button(
             IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE),
             IsMouseButtonDown(MOUSE_BUTTON_MIDDLE),
             IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE)));

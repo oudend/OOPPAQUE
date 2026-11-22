@@ -33,13 +33,11 @@ public class CanvasBlock extends LayoutBlock {
 
   private final Tool[] tools;
 
-  public CanvasBlock(int width, int height, int xPos, int yPos) {
+  public CanvasBlock(int width, int height) {
     this.actions = new ArrayList<>();
 
     this.width = width;
     this.height = height;
-    this.xPos = xPos;
-    this.yPos = yPos;
 
     selectedLayer = new RaylibCanvas(width, height);
 

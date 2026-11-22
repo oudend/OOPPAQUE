@@ -29,19 +29,17 @@ public class App {
     InitWindow(this.width, this.height, "Demo");
     SetTargetFPS(6000);
 
-    BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height, 0, 0);
+    BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height);
 
     BoxBlock canvasBox =
         new BoxBlock(
             new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
             width,
-            height,
-            0,
-            0);
+            height);
 
     rootBox.addChild(canvasBox);
 
-    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
+    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40);
     canvas.addAction(new ACanvasInput(canvas, debug));
     canvasBox.addChild(canvas);
 

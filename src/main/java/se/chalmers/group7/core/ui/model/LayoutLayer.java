@@ -6,8 +6,6 @@ import static com.raylib.Raylib.*;
 public class LayoutLayer extends LayoutBlock {
   int xPos;
   int yPos;
-  int width;
-  int height;
 
   RenderTexture canvas;
   LayoutBlock root;

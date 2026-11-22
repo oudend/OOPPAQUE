@@ -1,4 +1,4 @@
-package se.chalmers.group7.core.tools;
+package se.chalmers.group7.core.tools.move;
 
 import static com.raylib.Raylib.GetFrameTime;
 
@@ -13,6 +13,7 @@ import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerGuideRenderer;
 import se.chalmers.group7.core.rendering.ScreenOverlay;
+import se.chalmers.group7.core.tools.Tool;
 import se.chalmers.group7.core.ui.controller.Input;
 
 public class MoveTool implements Tool {
@@ -45,26 +46,25 @@ public class MoveTool implements Tool {
     this.screenOverlay = new LayerGuideRenderer(this.layerManager);
   }
 
-  private int layerIntersection(int x, int y) {
-    // input: global coords.
-
-    Raylib.Vector2 worldVector = camera.screenToWorld(x, y);
-
-    for (int i = 0; i < layerManager.getLayerCount(); i++) {
-      Layer layer = layerManager.getLayer(i);
-
-      boolean intersects =
-          (worldVector.x() >= layer.getX() && worldVector.x() <= layer.getX() + layer.getWidth())
-              && (worldVector.y() >= layer.getY()
-                  && worldVector.y() <= layer.getY() + layer.getHeight());
-
-      if (intersects) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
+  //  private int layerIntersection(int x, int y) {
+  //    Raylib.Vector2 worldVector = camera.screenToWorld(x, y);
+  //
+  //    for (int i = 0; i < layerManager.getLayerCount(); i++) {
+  //      Layer layer = layerManager.getLayer(i);
+  //
+  //      boolean intersects =
+  //          (worldVector.x() >= layer.getX() && worldVector.x() <= layer.getX() +
+  // layer.getWidth())
+  //              && (worldVector.y() >= layer.getY()
+  //                  && worldVector.y() <= layer.getY() + layer.getHeight());
+  //
+  //      if (intersects) {
+  //        return i;
+  //      }
+  //    }
+  //
+  //    return -1;
+  //  }
 
   @Override
   public void onInput(Input input) {
@@ -85,7 +85,7 @@ public class MoveTool implements Tool {
     Raylib.Vector2 worldVector = camera.screenToWorld(x, y);
     Raylib.Vector2 screenVector = new Raylib.Vector2().x(x).y(y);
 
-    activeLayerIndex = layerIntersection(x, y);
+    activeLayerIndex = LayerUtils.layerIntersection(layerManager.getLayers(), camera, x, y);
 
     boolean intersection = activeLayerIndex != -1;
 
@@ -127,8 +127,6 @@ public class MoveTool implements Tool {
   public void onPointerMove(int x, int y) {
     if (activeLayerIndex == -1) return;
 
-    Raylib.Vector2 screenVector = new Raylib.Vector2().x(x).y(y);
-
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
     float deltaX;
@@ -143,7 +141,7 @@ public class MoveTool implements Tool {
         activeLayer.setY((int) (activeLayer.getY() + deltaY));
         break;
       case RESIZE:
-        resizeLayer(activeLayer, x, y);
+        MoveToolUtils.resizeLayer(camera, activeLayer, initialTransform, activeHandle, x, y);
         break;
       case ROTATE:
         float centerX = activeLayer.getX() + activeLayer.getWidth() / 2f;
@@ -199,83 +197,5 @@ public class MoveTool implements Tool {
     if (layerManager.getLayerCount() == 0) return Optional.empty();
 
     return Optional.of(screenOverlay);
-  }
-
-  // mostly ai assisted math
-  private void resizeLayer(Layer layer, int mouseX, int mouseY) {
-    Raylib.Vector2 mouseWorld = camera.screenToWorld(mouseX, mouseY);
-    Raylib.Vector2 handleWorld = activeHandle.worldCoords();
-
-    float initX = initialTransform.x();
-    float initY = initialTransform.y();
-    float initW = initialTransform.width();
-    float initH = initialTransform.height();
-
-    // Rotation pivot (center of the layer)
-    float pivotX = initX + initW / 2f;
-    float pivotY = initY + initH / 2f;
-
-    double angleRad = Math.toRadians(layer.getRotation());
-    float cos = (float) Math.cos(angleRad);
-    float sin = (float) Math.sin(angleRad);
-
-    // Transform world coordinates into the layer's local space (inverse rotation)
-    float mdx = mouseWorld.x() - pivotX;
-    float mdy = mouseWorld.y() - pivotY;
-    float mouseLocalX = mdx * cos + mdy * sin;
-    float mouseLocalY = -mdx * sin + mdy * cos;
-
-    float hdx = handleWorld.x() - pivotX;
-    float hdy = handleWorld.y() - pivotY;
-    float handleLocalX = hdx * cos + hdy * sin;
-    float handleLocalY = -hdx * sin + hdy * cos;
-
-    // Initial bounds in local space (relative to the center pivot)
-    float left = -initW / 2f;
-    float right = initW / 2f;
-    float top = -initH / 2f;
-    float bottom = initH / 2f;
-
-    boolean moveLeft = Math.abs(handleLocalX - left) < Math.abs(handleLocalX - right);
-    boolean moveTop = Math.abs(handleLocalY - top) < Math.abs(handleLocalY - bottom);
-
-    float minWidth = 10f;
-    float minHeight = 10f;
-
-    switch (activeHandle.type()) {
-      case SCALE_WIDTH, SCALE_CORNER -> {
-        if (moveLeft) {
-          left = Math.min(mouseLocalX, right - minWidth);
-        } else {
-          right = Math.max(mouseLocalX, left + minWidth);
-        }
-      }
-      default -> {}
-    }
-
-    switch (activeHandle.type()) {
-      case SCALE_HEIGHT, SCALE_CORNER -> {
-        if (moveTop) {
-          top = Math.min(mouseLocalY, bottom - minHeight);
-        } else {
-          bottom = Math.max(mouseLocalY, top + minHeight);
-        }
-      }
-      default -> {}
-    }
-
-    float newWidth = right - left;
-    float newHeight = bottom - top;
-
-    // Find the new center in local space and rotate it back to world space
-    float localCenterX = (left + right) / 2f;
-    float localCenterY = (top + bottom) / 2f;
-    float newCenterX = pivotX + (localCenterX * cos - localCenterY * sin);
-    float newCenterY = pivotY + (localCenterX * sin + localCenterY * cos);
-
-    layer.setX(Math.round(newCenterX - newWidth / 2f));
-    layer.setY(Math.round(newCenterY - newHeight / 2f));
-    layer.setWidth(Math.round(newWidth));
-    layer.setHeight(Math.round(newHeight));
   }
 }

@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.layers;
 
 import com.raylib.Raylib;
+import java.util.List;
 import se.chalmers.group7.core.rendering.Camera;
 
 public class LayerUtils {
@@ -60,5 +61,24 @@ public class LayerUtils {
     }
 
     return handles[closestIndex];
+  }
+
+  public static int layerIntersection(List<Layer> layers, Camera camera, int screenX, int screenY) {
+    Raylib.Vector2 worldVector = camera.screenToWorld(screenX, screenY);
+
+    for (int i = 0; i < layers.size(); i++) {
+      Layer layer = layers.get(i);
+
+      boolean intersects =
+          (worldVector.x() >= layer.getX() && worldVector.x() <= layer.getX() + layer.getWidth())
+              && (worldVector.y() >= layer.getY()
+                  && worldVector.y() <= layer.getY() + layer.getHeight());
+
+      if (intersects) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 }

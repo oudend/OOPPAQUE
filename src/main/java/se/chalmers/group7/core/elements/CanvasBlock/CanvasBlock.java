@@ -13,6 +13,7 @@ import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerRenderer;
 import se.chalmers.group7.core.rendering.SquarePatternRenderer;
 import se.chalmers.group7.core.tools.*;
+import se.chalmers.group7.core.tools.move.MoveTool;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.model.LayoutBlock;
 

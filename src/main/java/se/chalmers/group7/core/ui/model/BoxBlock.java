@@ -72,12 +72,17 @@ public class BoxBlock extends LayoutBlock {
   }
 
   private int getInputPos(Input input) {
-    if (this.properties.getDirection() == Direction.row) {
-      return input.xPos();
-    } else if (this.properties.getDirection() == Direction.column) {
-      return input.yPos();
+    if (properties.getDirection() == Direction.row) {
+      return input.xPos()
+          - properties.getMarginX()
+          - properties.getBorderSize()
+          - properties.getPaddingX();
+    } else {
+      return input.yPos()
+          - properties.getMarginY()
+          - properties.getBorderSize()
+          - properties.getPaddingY();
     }
-    return -1;
   }
 
   private List<List<Integer>> getChildPositions() {
@@ -85,24 +90,15 @@ public class BoxBlock extends LayoutBlock {
 
     int currentX = 0;
     int currentY = 0;
-    for (LayoutBlock c : children) {
+
+    for (LayoutBlock child : children) {
       positions.add(List.of(currentX, currentY));
 
-      currentX += c.getWidth();
-      currentY += c.getHeight();
-
-      if (currentX
-              > this.width
-                  - 2
-                      * (properties.getMarginX()
-                          + properties.getPaddingX()
-                          + properties.getBorderSize())
-          || currentY
-              > this.height
-                  - 2
-                      * (properties.getMarginY()
-                          + properties.getPaddingY()
-                          + properties.getBorderSize())) break;
+      if (properties.getDirection() == Direction.row) {
+        currentX += child.getWidth();
+      } else {
+        currentY += child.getHeight();
+      }
     }
 
     return positions;

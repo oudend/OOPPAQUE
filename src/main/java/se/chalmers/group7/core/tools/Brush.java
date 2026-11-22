@@ -1,8 +1,8 @@
 package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
-import com.raylib.Raylib.Color;
 
+import com.raylib.Raylib.Color;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
 import se.chalmers.group7.core.operations.CanvasDrawOperation;
@@ -50,7 +50,8 @@ public class Brush implements Tool {
     if (!pointerDown) return;
 
     previewCanvas.drawCircle(x, y, radius, drawColor, BlendingMode.NORMAL);
-    previewCanvas.drawLine(previousX, previousY, x, y, radius * 2.0f, drawColor, BlendingMode.NORMAL);
+    previewCanvas.drawLine(
+        previousX, previousY, x, y, radius * 2.0f, drawColor, BlendingMode.NORMAL);
     previewCanvas.drawCircle(previousX, previousY, radius, drawColor, BlendingMode.NORMAL);
 
     previousX = x;

@@ -5,24 +5,21 @@ import static com.raylib.Raylib.*;
 import static se.chalmers.group7.core.canvas.utils.RaylibBlendModes.applyBlendMode;
 
 import com.raylib.Raylib;
+import java.util.Optional;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
-import se.chalmers.group7.core.layers.LayerPreviewManager;
 import se.chalmers.group7.core.layers.LayerSettings;
 
 public class LayerRenderer {
   private final LayerManager layerManager;
-  private final LayerPreviewManager layerPreviewManager;
   private final Raylib.RenderTexture renderTexture;
 
   private Raylib.RenderTexture intermediateTexture;
 
-  public LayerRenderer(
-      LayerManager layerManager, LayerPreviewManager layerPreviewManager, int width, int height) {
+  public LayerRenderer(LayerManager layerManager, int width, int height) {
     this.layerManager = layerManager;
-    this.layerPreviewManager = layerPreviewManager;
     renderTexture = LoadRenderTexture(width, height);
     intermediateTexture = LoadRenderTexture(width, height);
   }
@@ -156,8 +153,7 @@ public class LayerRenderer {
     EndTextureMode();
   }
 
-  public void render(Camera camera) {
-    Canvas previewCanvas = layerPreviewManager.getPreviewCanvas();
+  public void render(Camera camera, Optional<LayerPreview> layerPreview) {
     BeginTextureMode(renderTexture);
     ClearBackground(BLANK);
     EndTextureMode();
@@ -168,16 +164,12 @@ public class LayerRenderer {
       boolean active = i == layerManager.getActiveLayerIndex();
 
       if (active) {
-        if (previewCanvas != null) {
-          Raylib.Texture previewTexture = previewCanvas.getTexture();
-          BlendingMode previewBlending = layerPreviewManager.getPreviewBlending();
-
-          renderLayer(layer, camera, active, previewTexture, previewBlending);
+        if (layerPreview != null && layerPreview.isPresent()) {
+          LayerPreview preview = layerPreview.get();
+          renderLayer(layer, camera, active, preview.texture(), preview.blending());
           continue;
         }
       }
-
-      // draw an outline around the currently selected layer
 
       renderLayer(layer, camera, active);
     }

@@ -2,6 +2,9 @@ package se.chalmers.group7.core.tools;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.rendering.LayerPreview;
 import se.chalmers.group7.core.ui.controller.Input;
 
 public class ToolManager {
@@ -40,11 +43,15 @@ public class ToolManager {
     getActiveTool().onInput(input);
   }
 
-  //    public void onSelected() {
-  //        getActiveTool().onSelected();
-  //    }
-  //
-  //    public void deactivate() {
-  //        getActiveTool().deactivate();
-  //    }
+  public Optional<LayerPreview> getActiveLayerPreview() {
+    Tool activeTool = getActiveTool();
+    return activeTool != null ? activeTool.getLayerPreview() : Optional.empty();
+  }
+
+  public void renderOverlay(Camera camera) {
+    Tool activeTool = getActiveTool();
+    if (activeTool != null) {
+      activeTool.getScreenOverlay().ifPresent(overlay -> overlay.render(camera));
+    }
+  }
 }

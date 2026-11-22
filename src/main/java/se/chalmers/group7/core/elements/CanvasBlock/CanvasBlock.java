@@ -6,10 +6,7 @@ import static com.raylib.Raylib.*;
 import com.raylib.Raylib;
 import com.raylib.Raylib.RenderTexture;
 import java.util.ArrayList;
-import se.chalmers.group7.core.canvas.BlendingMode;
-import se.chalmers.group7.core.canvas.RaylibCanvas;
 import se.chalmers.group7.core.layers.LayerManager;
-import se.chalmers.group7.core.layers.LayerPreviewManager;
 import se.chalmers.group7.core.layers.PixelLayer;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
@@ -21,8 +18,6 @@ import se.chalmers.group7.core.ui.model.LayoutBlock;
 
 public class CanvasBlock extends LayoutBlock {
   private final RenderTexture compositeTexture;
-
-  private final LayerPreviewManager previewManager;
 
   private final LayerManager layerManager;
 
@@ -54,15 +49,10 @@ public class CanvasBlock extends LayoutBlock {
 
     layerManager.setActiveLayer(0);
 
-    previewManager =
-        new LayerPreviewManager(new RaylibCanvas(this.width, this.height), BlendingMode.NORMAL);
+    layerRenderer = new LayerRenderer(layerManager, this.width, this.height);
 
-    layerRenderer = new LayerRenderer(layerManager, previewManager, this.width, this.height);
-
-    toolManager.addTool(
-        new Brush(layerManager, previewManager, operationManager, camera, 10), "brush");
-    toolManager.addTool(
-        new Eraser(layerManager, previewManager, operationManager, camera, 10), "eraser");
+    toolManager.addTool(new Brush(layerManager, operationManager, camera, 10), "brush");
+    toolManager.addTool(new Eraser(layerManager, operationManager, camera, 10), "eraser");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 
@@ -105,7 +95,7 @@ public class CanvasBlock extends LayoutBlock {
   }
 
   public void prepareComposite() {
-    layerRenderer.render(camera);
+    layerRenderer.render(camera, toolManager.getActiveLayerPreview());
 
     BeginTextureMode(compositeTexture);
     ClearBackground(
@@ -120,6 +110,8 @@ public class CanvasBlock extends LayoutBlock {
         Vector2Zero(),
         0,
         WHITE);
+
+    toolManager.renderOverlay(camera);
 
     EndTextureMode();
   }

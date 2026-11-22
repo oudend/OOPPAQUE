@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
+import com.raylib.Raylib.Color;
 
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
@@ -22,6 +23,8 @@ public class Brush implements Tool {
 
   private boolean pointerDown = false;
 
+  private Color drawColor = BLACK;
+
   public Brush(
       Canvas canvas, PreviewManager previewManager, OperationManager operationManager, int radius) {
     this.canvas = canvas;
@@ -36,7 +39,7 @@ public class Brush implements Tool {
     pointerDown = true;
 
     previewManager.setPreviewBlending(BlendingMode.NORMAL);
-    previewCanvas.drawCircle(x, y, radius, BLACK, BlendingMode.NORMAL);
+    previewCanvas.drawCircle(x, y, radius, drawColor, BlendingMode.NORMAL);
 
     previousX = x;
     previousY = y;
@@ -46,9 +49,9 @@ public class Brush implements Tool {
   public void onPointerMove(int x, int y) {
     if (!pointerDown) return;
 
-    previewCanvas.drawCircle(x, y, radius, BLACK, BlendingMode.NORMAL);
-    previewCanvas.drawLine(previousX, previousY, x, y, radius * 2.0f, BLACK, BlendingMode.NORMAL);
-    previewCanvas.drawCircle(previousX, previousY, radius, BLACK, BlendingMode.NORMAL);
+    previewCanvas.drawCircle(x, y, radius, drawColor, BlendingMode.NORMAL);
+    previewCanvas.drawLine(previousX, previousY, x, y, radius * 2.0f, drawColor, BlendingMode.NORMAL);
+    previewCanvas.drawCircle(previousX, previousY, radius, drawColor, BlendingMode.NORMAL);
 
     previousX = x;
     previousY = y;
@@ -72,5 +75,9 @@ public class Brush implements Tool {
   @Override
   public void deactivate() {
     // not really handle-able right now
+  }
+
+  public void setDrawColor(Color color) {
+    drawColor = color;
   }
 }

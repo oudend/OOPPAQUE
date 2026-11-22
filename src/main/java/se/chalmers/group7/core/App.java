@@ -4,6 +4,7 @@ import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
 import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
+import se.chalmers.group7.core.elements.CanvasBlock.AChangeColor;
 import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.controller.InputManager;
@@ -37,6 +38,16 @@ public class App {
         new BoxBlock(
             new BoxProperties().setColor(DARKGRAY).setDirection(Direction.column), width, height);
 
+    BoxBlock canvasBox =
+            new BoxBlock(
+                    new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+                    width,
+                    height - 59);
+
+    CanvasBlock canvas = new CanvasBlock(width - 40, height - 99);
+    canvas.addAction(new ACanvasInput(canvas, debug));
+    canvasBox.addChild(canvas);
+
     BoxBlock colorPalette =
         new BoxBlock(
             new BoxProperties().setColor(LIGHTGRAY).setBorderColor(BLACK).setPaddingY(12),
@@ -61,22 +72,14 @@ public class App {
               colorBlockSize + 2 * colorSpacing,
               colorBlockSize);
 
+      colorBlock.addAction(new AChangeColor(canvas, color));
+
       colorPalette.addChild(colorBlock);
     }
 
     rootBox.addChild(colorPalette);
 
-    BoxBlock canvasBox =
-        new BoxBlock(
-            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
-            width,
-            height - 59);
-
     rootBox.addChild(canvasBox);
-
-    CanvasBlock canvas = new CanvasBlock(width - 40, height - 99);
-    canvas.addAction(new ACanvasInput(canvas, debug));
-    canvasBox.addChild(canvas);
 
     root = rootBox;
     if (debug) {

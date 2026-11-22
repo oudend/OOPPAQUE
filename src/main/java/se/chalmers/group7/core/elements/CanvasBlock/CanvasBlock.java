@@ -139,4 +139,8 @@ public class CanvasBlock extends LayoutBlock {
   public OperationManager getOperationManager() {
     return operationManager;
   }
+
+  public Brush getBrush() {
+    return (Brush) tools[0];
+  }
 }

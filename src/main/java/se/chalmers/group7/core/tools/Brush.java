@@ -1,46 +1,113 @@
 package se.chalmers.group7.core.tools;
 
-import se.chalmers.group7.core.Canvas;
+import static com.raylib.Colors.BLACK;
 
-public class Brush implements Tool, ResizableTool {
+import com.raylib.Raylib;
+import se.chalmers.group7.core.canvas.BlendingMode;
+import se.chalmers.group7.core.canvas.RaylibCanvas;
+import se.chalmers.group7.core.layers.Layer;
+import se.chalmers.group7.core.layers.LayerManager;
+import se.chalmers.group7.core.layers.LayerPreviewManager;
+import se.chalmers.group7.core.operations.CanvasDrawOperation;
+import se.chalmers.group7.core.operations.Operation;
+import se.chalmers.group7.core.operations.OperationManager;
+import se.chalmers.group7.core.rendering.Camera;
 
-  private Canvas canvas;
-  private ToolSettings settings;
-  private MouseTracker mouseTracker = new MouseTracker();
+public class Brush implements Tool {
 
-  public Brush(Canvas canvas, ToolSettings settings) {
-    this.canvas = canvas;
-    this.settings = settings;
+  private final OperationManager operationManager;
+  private final LayerManager layerManager;
+  private LayerPreviewManager previewManager;
+  private final Camera camera;
+  private int radius;
+
+  private Integer previousX;
+  private Integer previousY;
+
+  private boolean pointerDown = false;
+
+  public Brush(
+      LayerManager layerManager,
+      LayerPreviewManager previewManager,
+      OperationManager operationManager,
+      Camera camera,
+      int radius) {
+    this.layerManager = layerManager;
+    this.previewManager = previewManager;
+    this.camera = camera;
+    this.radius = radius;
+    this.operationManager = operationManager;
   }
 
   @Override
   public void onPointerDown(int x, int y) {
-    mouseTracker.start(x, y);
+    pointerDown = true;
+
+    Layer activeLayer = layerManager.getActiveLayer();
+
+    previewManager.setPreviewCanvas(
+        new RaylibCanvas(activeLayer.getWidth(), activeLayer.getHeight()));
+    previewManager.setPreviewBlending(BlendingMode.NORMAL);
+
+    Raylib.Vector2 layerCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
+
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(
+            (int) layerCoords.x(), (int) layerCoords.y(), radius, BLACK, BlendingMode.NORMAL);
+
+    previousX = (int) layerCoords.x();
+    previousY = (int) layerCoords.y();
   }
 
   @Override
   public void onPointerMove(int x, int y) {
-    if (!mouseTracker.isPointerDown()) return;
+    if (!pointerDown) return;
 
-    canvas.drawCircle(x, y, settings.getRadius());
-    canvas.drawLine(mouseTracker.getPreviousX(), mouseTracker.getPreviousY(), x, y, settings.getRadius() * 2.0f);
-    canvas.drawCircle(mouseTracker.getPreviousX(), mouseTracker.getPreviousY(), settings.getRadius());
+    Layer activeLayer = layerManager.getActiveLayer();
 
-    mouseTracker.move(x, y);
+    Raylib.Vector2 layerCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
+
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(
+            (int) layerCoords.x(), (int) layerCoords.y(), radius, BLACK, BlendingMode.NORMAL);
+    previewManager
+        .getPreviewCanvas()
+        .drawLine(
+            previousX,
+            previousY,
+            (int) layerCoords.x(),
+            (int) layerCoords.y(),
+            radius * 2.0f,
+            BLACK,
+            BlendingMode.NORMAL);
+    previewManager
+        .getPreviewCanvas()
+        .drawCircle(previousX, previousY, radius, BLACK, BlendingMode.NORMAL);
+
+    previousX = (int) layerCoords.x();
+    previousY = (int) layerCoords.y();
   }
 
   @Override
   public void onPointerUp() {
-    mouseTracker.end();
+    Operation operation =
+        new CanvasDrawOperation(
+            layerManager.getActiveCanvas(), BlendingMode.NORMAL, previewManager.getTexture());
+
+    operationManager.addOperation(operation);
+
+    pointerDown = false;
+
+    previousX = null;
+    previousY = null;
+
+    previewManager.clear();
   }
 
   @Override
   public void deactivate() {
     // not really handle-able right now
-  }
-
-  @Override
-  public ToolSettings getSettings() {
-    return settings;
   }
 }

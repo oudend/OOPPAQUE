@@ -3,66 +3,77 @@ package se.chalmers.group7.core;
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
-import se.chalmers.group7.core.tools.Brush;
-import se.chalmers.group7.core.tools.Tool;
+import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
+import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
+import se.chalmers.group7.core.ui.controller.Input;
+import se.chalmers.group7.core.ui.controller.InputManager;
+import se.chalmers.group7.core.ui.model.*;
+import se.chalmers.group7.core.ui.view.LayoutComposer;
 
 public class App {
+  private final boolean debug;
 
-  private int width;
-  private int height;
+  private final int width;
+  private final int height;
 
-  private Tool selectedTool;
+  private final InputManager inputManager = new InputManager();
+  private final LayoutComposer layoutComposer;
+  private final LayoutBlock root;
 
-  private RaylibCanvas selectedLayer;
+  public App(int width, int height, boolean debug) {
+    this.debug = debug;
 
-  private boolean mouseDown = false;
-
-  private Vector2 previousMousePosition = Vector2Zero();
-
-  public App(int width, int height) {
     this.width = width;
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
-    SetTargetFPS(60);
+    SetTargetFPS(6000);
 
-    selectedLayer = new RaylibCanvas(this.width, this.height);
+    BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height, 0, 0);
 
-    selectedTool = new Brush(selectedLayer, 20);
+    BoxBlock canvasBox =
+        new BoxBlock(
+            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+            width,
+            height,
+            0,
+            0);
+
+    rootBox.addChild(canvasBox);
+
+    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
+    canvas.addAction(new ACanvasInput(canvas, debug));
+    canvasBox.addChild(canvas);
+
+    root = rootBox;
+    if (debug) {
+      root.addAction(
+          new Action() {
+            @Override
+            public void executeAction(Input input) {
+              if (IsKeyDown(KEY_M)) {
+                rlCheckErrors();
+              }
+            }
+          });
+    }
+    LayoutLayer layer = new LayoutLayer(root, 0, 0, width, height);
+
+    layoutComposer = new LayoutComposer();
+    layoutComposer.addLayer(layer);
   }
 
   public void run() {
     while (!WindowShouldClose()) {
-      BeginDrawing();
-      ClearBackground(RAYWHITE);
+      Input input = inputManager.getInput();
+      root.evaluateInput(input);
 
-      // renders the RaylibCanvas
-      Rectangle rect =
-          new Rectangle()
-              .x(0.0f)
-              .y(0.0f)
-              .width((float) selectedLayer.getWidth())
-              .height((float) -selectedLayer.getHeight());
-      DrawTextureRec(selectedLayer.getTexture(), rect, Vector2Zero(), WHITE);
-
-      Vector2 mousePosition = GetMousePosition();
-
-      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !mouseDown) {
-        selectedTool.onPointerDown((int) mousePosition.x(), (int) mousePosition.y());
-        mouseDown = true;
+      if (debug) {
+        layoutComposer.drawWithFPS();
+      } else {
+        layoutComposer.draw();
       }
-
-      if (IsMouseButtonUp(MOUSE_BUTTON_LEFT) && mouseDown) {
-        selectedTool.onPointerUp();
-        mouseDown = false;
-      }
-
-      if (Vector2Distance(previousMousePosition, mousePosition) > 1) {
-        previousMousePosition = mousePosition;
-        selectedTool.onPointerMove((int) mousePosition.x(), (int) mousePosition.y());
-      }
-
-      EndDrawing();
     }
+    CloseWindow();
   }
 }

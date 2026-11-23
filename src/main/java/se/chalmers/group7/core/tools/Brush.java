@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
+import static com.raylib.Raylib.ColorAlpha;
 
 import com.raylib.Raylib;
 import se.chalmers.group7.core.canvas.BlendingMode;
@@ -13,14 +14,15 @@ import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 
-public class Brush implements Tool, ResizableTool {
+public class Brush implements Tool, Resizable, OpacityAdjustable {
 
   private final OperationManager operationManager;
   private final LayerManager layerManager;
   private LayerPreviewManager previewManager;
   private final Camera camera;
 
-  private final SizeSettings size;
+  private final NumericSetting size;
+  private final NumericSetting opacity;
 
   private Integer previousX;
   private Integer previousY;
@@ -32,12 +34,18 @@ public class Brush implements Tool, ResizableTool {
       LayerPreviewManager previewManager,
       OperationManager operationManager,
       Camera camera,
-      SizeSettings size) {
+      NumericSetting size,
+      NumericSetting opacity) {
     this.layerManager = layerManager;
     this.previewManager = previewManager;
+    this.operationManager = operationManager;
     this.camera = camera;
     this.size = size;
-    this.operationManager = operationManager;
+    this.opacity = opacity;
+  }
+
+  private Raylib.Color getColor() {
+    return ColorAlpha(BLACK, opacity.getValue());
   }
 
   @Override
@@ -57,9 +65,9 @@ public class Brush implements Tool, ResizableTool {
         .drawCircle(
             (int) layerCoords.x(),
             (int) layerCoords.y(),
-            size.getRadius(),
-            BLACK,
-            BlendingMode.NORMAL);
+            size.getValue(),
+            getColor(),
+            BlendingMode.REPLACE);
 
     previousX = (int) layerCoords.x();
     previousY = (int) layerCoords.y();
@@ -78,9 +86,9 @@ public class Brush implements Tool, ResizableTool {
         .drawCircle(
             (int) layerCoords.x(),
             (int) layerCoords.y(),
-            size.getRadius(),
-            BLACK,
-            BlendingMode.NORMAL);
+            size.getValue(),
+            getColor(),
+            BlendingMode.REPLACE);
     previewManager
         .getPreviewCanvas()
         .drawLine(
@@ -88,12 +96,12 @@ public class Brush implements Tool, ResizableTool {
             previousY,
             (int) layerCoords.x(),
             (int) layerCoords.y(),
-            size.getRadius() * 2.0f,
-            BLACK,
-            BlendingMode.NORMAL);
+            size.getValue() * 2.0f,
+            getColor(),
+            BlendingMode.REPLACE);
     previewManager
         .getPreviewCanvas()
-        .drawCircle(previousX, previousY, size.getRadius(), BLACK, BlendingMode.NORMAL);
+        .drawCircle(previousX, previousY, size.getValue(), getColor(), BlendingMode.REPLACE);
 
     previousX = (int) layerCoords.x();
     previousY = (int) layerCoords.y();
@@ -121,7 +129,12 @@ public class Brush implements Tool, ResizableTool {
   }
 
   @Override
-  public SizeSettings getSizeSettings() {
+  public NumericSetting getSize() {
     return this.size;
+  }
+
+  @Override
+  public NumericSetting getOpacity() {
+    return this.opacity;
   }
 }

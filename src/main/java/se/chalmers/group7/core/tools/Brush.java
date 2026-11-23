@@ -13,13 +13,14 @@ import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 
-public class Brush implements Tool {
+public class Brush implements Tool, ResizableTool {
 
   private final OperationManager operationManager;
   private final LayerManager layerManager;
   private LayerPreviewManager previewManager;
   private final Camera camera;
-  private int radius;
+
+  private final SizeSettings size;
 
   private Integer previousX;
   private Integer previousY;
@@ -31,11 +32,11 @@ public class Brush implements Tool {
       LayerPreviewManager previewManager,
       OperationManager operationManager,
       Camera camera,
-      int radius) {
+      SizeSettings size) {
     this.layerManager = layerManager;
     this.previewManager = previewManager;
     this.camera = camera;
-    this.radius = radius;
+    this.size = size;
     this.operationManager = operationManager;
   }
 
@@ -54,7 +55,11 @@ public class Brush implements Tool {
     previewManager
         .getPreviewCanvas()
         .drawCircle(
-            (int) layerCoords.x(), (int) layerCoords.y(), radius, BLACK, BlendingMode.NORMAL);
+            (int) layerCoords.x(),
+            (int) layerCoords.y(),
+            size.getRadius(),
+            BLACK,
+            BlendingMode.NORMAL);
 
     previousX = (int) layerCoords.x();
     previousY = (int) layerCoords.y();
@@ -71,7 +76,11 @@ public class Brush implements Tool {
     previewManager
         .getPreviewCanvas()
         .drawCircle(
-            (int) layerCoords.x(), (int) layerCoords.y(), radius, BLACK, BlendingMode.NORMAL);
+            (int) layerCoords.x(),
+            (int) layerCoords.y(),
+            size.getRadius(),
+            BLACK,
+            BlendingMode.NORMAL);
     previewManager
         .getPreviewCanvas()
         .drawLine(
@@ -79,12 +88,12 @@ public class Brush implements Tool {
             previousY,
             (int) layerCoords.x(),
             (int) layerCoords.y(),
-            radius * 2.0f,
+            size.getRadius() * 2.0f,
             BLACK,
             BlendingMode.NORMAL);
     previewManager
         .getPreviewCanvas()
-        .drawCircle(previousX, previousY, radius, BLACK, BlendingMode.NORMAL);
+        .drawCircle(previousX, previousY, size.getRadius(), BLACK, BlendingMode.NORMAL);
 
     previousX = (int) layerCoords.x();
     previousY = (int) layerCoords.y();
@@ -109,5 +118,10 @@ public class Brush implements Tool {
   @Override
   public void deactivate() {
     // not really handle-able right now
+  }
+
+  @Override
+  public SizeSettings getSizeSettings() {
+    return this.size;
   }
 }

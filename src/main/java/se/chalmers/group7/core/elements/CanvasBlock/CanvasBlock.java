@@ -64,7 +64,7 @@ public class CanvasBlock extends LayoutBlock {
 
     tools =
         new Tool[] {
-          new Brush(layerManager, previewManager, operationManager, camera, 10),
+          new Brush(layerManager, previewManager, operationManager, camera, new SizeSettings()),
           new Eraser(layerManager, previewManager, operationManager, camera, 10),
           new PanningTool(camera, operationManager),
           new MoveTool(layerManager, operationManager, camera)

@@ -7,13 +7,8 @@ import se.chalmers.group7.core.rendering.Camera;
 
 public class Brush extends StrokeTool {
 
-  public Brush(
-      OperationManager operationManager,
-      LayerManager layerManager,
-      Camera camera,
-      NumericSetting size,
-      NumericSetting opacity) {
-    super(operationManager, layerManager, camera, size, opacity);
+  public Brush(OperationManager operationManager, LayerManager layerManager, Camera camera) {
+    super(operationManager, layerManager, camera);
   }
 
   @Override

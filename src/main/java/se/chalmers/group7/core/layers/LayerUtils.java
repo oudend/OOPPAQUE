@@ -81,4 +81,27 @@ public class LayerUtils {
 
     return -1;
   }
+
+  public record BoundingBox(float x, float y, float width, float height) {}
+
+  public static BoundingBox getBoundingBox(Layer layer) {
+    double x = layer.getX();
+    double y = layer.getY();
+    double width = layer.getWidth();
+    double height = layer.getHeight();
+
+    double angle = Math.toRadians(layer.getRotation());
+
+    double cos = Math.abs(Math.cos(angle));
+    double sin = Math.abs(Math.sin(angle));
+
+    double boundingWidth = width * cos + height * sin;
+    double boundingHeight = width * sin + height * cos;
+
+    double boundingX = x + (width - boundingWidth) / 2.0;
+    double boundingY = y + (height - boundingHeight) / 2.0;
+
+    return new BoundingBox(
+        (float) boundingX, (float) boundingY, (float) boundingWidth, (float) boundingHeight);
+  }
 }

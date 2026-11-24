@@ -1,6 +1,14 @@
 package se.chalmers.group7.core.tools.move;
 
+import static com.raylib.Raylib.*;
+import static com.raylib.Raylib.Vector2Distance;
+
 import com.raylib.Raylib;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import se.chalmers.group7.core.alignment.AlignmentLine;
+import se.chalmers.group7.core.alignment.AlignmentUtils;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerTransform;
 import se.chalmers.group7.core.layers.LayerUtils.Handle;
@@ -88,5 +96,96 @@ public class MoveToolUtils {
     layer.setY(Math.round(newCenterY - newHeight / 2f));
     layer.setWidth(Math.round(newWidth));
     layer.setHeight(Math.round(newHeight));
+  }
+
+  record LineMatch(AlignmentLine mainLine, AlignmentLine comparisonLine, float distance) {}
+
+  public static List<LineMatch> findBestMatches(
+      List<AlignmentLine> mainLines,
+      List<AlignmentLine> comparisonLines,
+      float maxDistance,
+      float tolerance) {
+    //    List<LineMatch> horizontal = new ArrayList<>();
+    List<LineMatch> matches = new ArrayList<>();
+
+    for (AlignmentLine mLine : mainLines) {
+      for (AlignmentLine cLine : comparisonLines) {
+
+        if (AlignmentUtils.angularDifference(mLine.angle(), cLine.angle()) > 0.001f) {
+          continue;
+        }
+
+        float distance = AlignmentUtils.perpendicularDistance(mLine, cLine);
+
+        if (distance >= maxDistance) {
+          continue;
+        }
+
+        // Classify based on the main line orientation
+        if (isHorizontal(mLine)) {
+          matches.add(new LineMatch(mLine, cLine, distance));
+        } else {
+          matches.add(new LineMatch(mLine, cLine, distance));
+        }
+      }
+    }
+
+    return getBestMatches(matches, tolerance);
+  }
+
+  private static List<LineMatch> getBestMatches(List<LineMatch> matches, float tolerance) {
+    if (matches.isEmpty()) {
+      return List.of();
+    }
+
+    float minDistance = matches.stream().map(LineMatch::distance).min(Float::compare).orElseThrow();
+
+    return matches.stream()
+        .filter(m -> m.distance() <= minDistance + tolerance)
+        .sorted(Comparator.comparingDouble(LineMatch::distance))
+        .toList();
+  }
+
+  private static boolean isHorizontal(AlignmentLine line) {
+    float angle = Math.abs(line.angle()) % 180f;
+    return angle < 45f || angle > 135f;
+  }
+
+  public static boolean align(
+      Camera camera,
+      Layer activeLayer,
+      Vector2 mouseIdeal,
+      AlignmentLine main,
+      AlignmentLine comparison) {
+    Raylib.Vector2 alignmentDelta = AlignmentUtils.getOffsetVector(comparison, main);
+
+    Raylib.Vector2 alignmentIdeal =
+        Vector2Add(new Vector2().x(activeLayer.getX()).y(activeLayer.getY()), alignmentDelta);
+
+    float angle = (float) Math.toRadians(main.angle());
+
+    Raylib.Vector2 direction = new Vector2().x((float) Math.cos(angle)).y((float) Math.sin(angle));
+
+    Raylib.Vector2 delta = Vector2Subtract(mouseIdeal, alignmentIdeal);
+
+    float projection = delta.x() * direction.x() + delta.y() * direction.y();
+
+    Raylib.Vector2 slidingPosition =
+        Vector2Add(alignmentIdeal, Vector2Scale(direction, projection));
+
+    float screenDistance =
+        Vector2Distance(
+            camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
+            camera.worldToScreen(slidingPosition.x(), slidingPosition.y()));
+
+    if (screenDistance < 40f) {
+      activeLayer.setX(Math.round(slidingPosition.x()));
+
+      activeLayer.setY(Math.round(slidingPosition.y()));
+
+      return true;
+    }
+
+    return false;
   }
 }

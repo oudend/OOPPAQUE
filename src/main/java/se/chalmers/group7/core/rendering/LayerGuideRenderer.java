@@ -16,6 +16,8 @@ public class LayerGuideRenderer implements ScreenOverlay {
   }
 
   public void render(Camera camera) {
+    if (layerManager.getLayerCount() == 0) return;
+
     for (int i = 0; i < layerManager.getLayerCount(); i++) {
       Layer layer = layerManager.getLayer(i);
 

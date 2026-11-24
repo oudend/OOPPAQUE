@@ -8,18 +8,40 @@ public class Camera {
   private float y;
   private float zoom;
 
-  public Camera(float x, float y, float zoom) {
+  private int viewportWidth;
+  private int viewportHeight;
+
+  public Camera(float x, float y, int viewportWidth, int viewportHeight, float zoom) {
     this.x = x;
     this.y = y;
     this.zoom = zoom;
+
+    this.viewportWidth = viewportWidth;
+    this.viewportHeight = viewportHeight;
   }
 
-  public Camera(float x, float y) {
-    this(x, y, 1.0f);
+  public int getViewportWidth() {
+    return viewportWidth;
   }
 
-  public Camera() {
-    this(0, 0, 1);
+  public void setViewportWidth(int viewportWidth) {
+    this.viewportWidth = viewportWidth;
+  }
+
+  public int getViewportHeight() {
+    return viewportHeight;
+  }
+
+  public void setViewportHeight(int viewportHeight) {
+    this.viewportHeight = viewportHeight;
+  }
+
+  public Camera(float x, float y, int viewportWidth, int viewportHeight) {
+    this(x, y, viewportWidth, viewportHeight, 1.0f);
+  }
+
+  public Camera(int viewportWidth, int viewportHeight) {
+    this(0, 0, viewportWidth, viewportHeight, 1);
   }
 
   public float getX() {

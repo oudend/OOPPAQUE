@@ -27,12 +27,14 @@ public class CanvasBlock extends LayoutBlock {
 
   private final LayerRenderer layerRenderer;
 
-  private final Camera camera = new Camera();
+  private final Camera camera;
 
   private final SquarePatternRenderer transparencyPatternRenderer;
 
   public CanvasBlock(int width, int height, int xPos, int yPos) {
     this.actions = new ArrayList<>();
+
+    camera = new Camera(width, height);
 
     this.width = width;
     this.height = height;

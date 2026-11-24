@@ -1,3 +1,3 @@
 package se.chalmers.group7.core.alignment;
 
-public record AlignmentLine(int x, int y, float angle) {}
+public record AlignmentLine(float x, float y, float angle) {}

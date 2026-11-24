@@ -4,11 +4,26 @@ import static com.raylib.Colors.*;
 
 import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
+import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.rendering.utils.RaylibUtils;
 
-public class LayerGuideRenderer {
-  public static void render(Camera camera, Layer layer) {
+public class LayerGuideRenderer implements ScreenOverlay {
+  private LayerManager layerManager;
+
+  public LayerGuideRenderer(LayerManager layerManager) {
+    this.layerManager = layerManager;
+  }
+
+  public void render(Camera camera) {
+    for (int i = 0; i < layerManager.getLayerCount(); i++) {
+      Layer layer = layerManager.getLayer(i);
+
+      renderLayer(camera, layer, i == layerManager.getActiveLayerIndex());
+    }
+  }
+
+  private void renderLayer(Camera camera, Layer layer, boolean renderHandles) {
     float zoom = camera.getZoom();
 
     Raylib.Vector2 screenPosition = camera.worldToScreen(layer.getX(), layer.getY());
@@ -30,6 +45,10 @@ public class LayerGuideRenderer {
 
     RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f, BLUE);
 
+    if (renderHandles) renderLayerHandles(camera, layer);
+  }
+
+  private void renderLayerHandles(Camera camera, Layer layer) {
     Raylib.Vector2 rotationHandleLineStart =
         camera.layerCoordinatesToWorld(layer, layer.getWidth() / 2.0f, 0);
     Raylib.Vector2 rotationHandleLineEnd =

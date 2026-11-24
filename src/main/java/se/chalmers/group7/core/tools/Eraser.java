@@ -31,10 +31,13 @@ public class Eraser implements Tool {
   private Canvas strokeCanvas;
 
   public Eraser(
-          LayerManager layerManager, OperationManager operationManager, Camera camera, NumericSetting size) {
+      LayerManager layerManager,
+      OperationManager operationManager,
+      Camera camera,
+      NumericSetting size) {
     this.layerManager = layerManager;
     this.camera = camera;
-      this.size = size;
+    this.size = size;
     this.operationManager = operationManager;
 
     helper.setBlendingMode(BlendingMode.REPLACE);

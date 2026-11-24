@@ -72,19 +72,19 @@ public class CanvasBlock extends LayoutBlock {
 
     Tool activeTool = toolManager.getActiveTool();
 
-    if (activeTool instanceof Resizable) {
+    if (activeTool instanceof Resizable adjustable) {
       if (IsKeyDown(KEY_UP)) {
-        ((Resizable) activeTool).increaseSize(5f);
+        adjustable.increaseSize(5f);
       } else if (IsKeyDown(KEY_DOWN)) {
-        ((Resizable) activeTool).decreaseSize(5f);
+        adjustable.decreaseSize(5f);
       }
     }
 
-    if (activeTool instanceof OpacityAdjustable) {
+    if (activeTool instanceof OpacityAdjustable adjustable) {
       if (IsKeyDown(KEY_RIGHT)) {
-        ((OpacityAdjustable) activeTool).increaseOpacity(0.05f);
+        adjustable.increaseOpacity(0.05f);
       } else if (IsKeyDown(KEY_LEFT)) {
-        ((OpacityAdjustable) activeTool).decreaseOpacity(0.05f);
+        adjustable.decreaseOpacity(0.05f);
       }
     }
 

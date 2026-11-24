@@ -7,13 +7,8 @@ import se.chalmers.group7.core.rendering.Camera;
 
 public class Eraser extends StrokeTool {
 
-  public Eraser(
-      OperationManager operationManager,
-      LayerManager layerManager,
-      Camera camera,
-      NumericSetting size,
-      NumericSetting opacity) {
-    super(operationManager, layerManager, camera, size, opacity);
+  public Eraser(OperationManager operationManager, LayerManager layerManager, Camera camera) {
+    super(operationManager, layerManager, camera);
   }
 
   @Override

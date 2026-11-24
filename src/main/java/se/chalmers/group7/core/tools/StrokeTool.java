@@ -32,17 +32,12 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   int previousX = 0;
   int previousY = 0;
 
-  StrokeTool(
-      OperationManager operationManager,
-      LayerManager layerManager,
-      Camera camera,
-      NumericSetting size,
-      NumericSetting opacity) {
+  StrokeTool(OperationManager operationManager, LayerManager layerManager, Camera camera) {
     this.operationManager = operationManager;
     this.layerManager = layerManager;
     this.camera = camera;
-    this.size = size;
-    this.opacity = opacity;
+    this.size = new NumericSetting(NumericSettingType.SIZE);
+    this.opacity = new NumericSetting(NumericSettingType.OPACITY);
   }
 
   protected abstract BlendingMode getBlendingMode();

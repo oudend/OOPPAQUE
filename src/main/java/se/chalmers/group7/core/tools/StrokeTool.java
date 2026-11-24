@@ -1,6 +1,11 @@
 package se.chalmers.group7.core.tools;
 
+import static com.raylib.Colors.BLACK;
+import static com.raylib.Raylib.ColorAlpha;
+import static com.raylib.Raylib.GetFrameTime;
+
 import com.raylib.Raylib;
+import java.util.Optional;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
 import se.chalmers.group7.core.canvas.RaylibCanvas;
@@ -12,12 +17,6 @@ import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerPreview;
 import se.chalmers.group7.core.ui.controller.Input;
-
-import java.util.Optional;
-
-import static com.raylib.Colors.BLACK;
-import static com.raylib.Raylib.ColorAlpha;
-import static com.raylib.Raylib.GetFrameTime;
 
 abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   private final OperationManager operationManager;
@@ -135,7 +134,8 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     float radius = size.getValue();
 
     strokeCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
-    strokeCanvas.drawLine(previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
+    strokeCanvas.drawLine(
+        previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
     strokeCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
 
     previousX = x;

@@ -19,14 +19,14 @@ import se.chalmers.group7.core.rendering.LayerPreview;
 import se.chalmers.group7.core.ui.controller.Input;
 
 abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
-  private final OperationManager operationManager;
-  private final LayerManager layerManager;
-  private final Camera camera;
+  protected final OperationManager operationManager;
+  protected final LayerManager layerManager;
+  protected final Camera camera;
 
   private final NumericSetting size;
   private final NumericSetting opacity;
 
-  private boolean pointerDown = false;
+  protected boolean pointerDown = false;
   private Canvas strokeCanvas;
 
   int previousX = 0;
@@ -125,7 +125,11 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     return ColorAlpha(BLACK, opacity.getValue());
   }
 
-  private void drawStroke(int x, int y) {
+  protected void drawStroke(int x, int y) {
+    drawStroke(x, y, true);
+  }
+
+  protected void drawStroke(int x, int y, boolean update) {
     float radius = size.getValue();
 
     strokeCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
@@ -133,7 +137,10 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
         previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
     strokeCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
 
-    previousX = x;
-    previousY = y;
+    if (update) {
+
+      previousX = x;
+      previousY = y;
+    }
   }
 }

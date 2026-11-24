@@ -4,7 +4,9 @@ import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
 import com.raylib.Raylib;
+import com.raylib.Raylib.Rectangle;
 import com.raylib.Raylib.RenderTexture;
+import com.raylib.Raylib.Vector2;
 import java.util.ArrayList;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.PixelLayer;
@@ -53,6 +55,7 @@ public class CanvasBlock extends LayoutBlock {
 
     toolManager.addTool(new Brush(operationManager, layerManager, camera), "brush");
     toolManager.addTool(new Eraser(operationManager, layerManager, camera), "eraser");
+    toolManager.addTool(new LineTool(operationManager, layerManager, camera), "line");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 
@@ -68,6 +71,8 @@ public class CanvasBlock extends LayoutBlock {
       toolManager.setActive("pan");
     } else if (IsKeyDown(KEY_V)) {
       toolManager.setActive("move");
+    } else if (IsKeyDown(KEY_L)) {
+      toolManager.setActive("line");
     }
 
     toolManager.onInput(input);

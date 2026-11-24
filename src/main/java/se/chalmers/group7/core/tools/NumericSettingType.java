@@ -2,7 +2,7 @@ package se.chalmers.group7.core.tools;
 
 public enum NumericSettingType {
   SIZE(15f, 1f, 200f),
-  OPACITY(0.5f, 0f, 1f);
+  OPACITY(1f, 0f, 1f);
 
   private final float defaultValue;
   private final float min;

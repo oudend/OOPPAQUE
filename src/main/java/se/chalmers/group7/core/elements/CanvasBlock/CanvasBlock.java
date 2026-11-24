@@ -60,7 +60,9 @@ public class CanvasBlock extends LayoutBlock {
             new NumericSetting(NumericSettingType.OPACITY)),
         "brush");
     toolManager.addTool(
-        new Eraser(layerManager, operationManager, camera, new NumericSetting(NumericSettingType.SIZE)), "eraser");
+        new Eraser(
+            layerManager, operationManager, camera, new NumericSetting(NumericSettingType.SIZE)),
+        "eraser");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 

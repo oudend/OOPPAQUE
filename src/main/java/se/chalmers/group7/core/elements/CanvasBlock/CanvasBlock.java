@@ -51,7 +51,7 @@ public class CanvasBlock extends LayoutBlock {
 
     layerRenderer = new LayerRenderer(layerManager, this.width, this.height);
 
-    toolManager.addTool(new Brush(operationManager, layerManager, camera), "brush");
+    toolManager.addTool(new Brush(operationManager, layerManager, camera, BLACK), "brush");
     toolManager.addTool(new Eraser(operationManager, layerManager, camera), "eraser");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");

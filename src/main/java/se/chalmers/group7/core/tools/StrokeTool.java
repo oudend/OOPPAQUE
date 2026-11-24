@@ -1,10 +1,10 @@
 package se.chalmers.group7.core.tools;
 
-import static com.raylib.Colors.BLACK;
 import static com.raylib.Raylib.ColorAlpha;
 import static com.raylib.Raylib.GetFrameTime;
 
 import com.raylib.Raylib;
+import com.raylib.Raylib.Color;
 import java.util.Optional;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
@@ -28,16 +28,38 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
 
   private boolean pointerDown = false;
   private Canvas strokeCanvas;
+  private Color drawColor;
 
   int previousX = 0;
   int previousY = 0;
 
-  StrokeTool(OperationManager operationManager, LayerManager layerManager, Camera camera) {
+  StrokeTool(
+      OperationManager operationManager,
+      LayerManager layerManager,
+      Camera camera,
+      Color drawColor) {
+    this(
+        operationManager,
+        layerManager,
+        camera,
+        drawColor,
+        new NumericSetting(NumericSettingType.SIZE),
+        new NumericSetting(NumericSettingType.OPACITY));
+  }
+
+  StrokeTool(
+      OperationManager operationManager,
+      LayerManager layerManager,
+      Camera camera,
+      Color drawColor,
+      NumericSetting size,
+      NumericSetting opacity) {
     this.operationManager = operationManager;
     this.layerManager = layerManager;
     this.camera = camera;
-    this.size = new NumericSetting(NumericSettingType.SIZE);
-    this.opacity = new NumericSetting(NumericSettingType.OPACITY);
+    this.size = size;
+    this.opacity = opacity;
+    this.drawColor = drawColor;
   }
 
   protected abstract BlendingMode getBlendingMode();
@@ -122,7 +144,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   }
 
   public Raylib.Color getColor() {
-    return ColorAlpha(BLACK, opacity.getValue());
+    return ColorAlpha(drawColor, opacity.getValue());
   }
 
   private void drawStroke(int x, int y) {

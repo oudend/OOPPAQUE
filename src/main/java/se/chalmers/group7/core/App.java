@@ -28,7 +28,7 @@ public class App {
     this.height = height;
 
     InitWindow(this.width, this.height, "Demo");
-    SetTargetFPS(6000);
+    SetTargetFPS(60);
 
     initializeLayout();
   }

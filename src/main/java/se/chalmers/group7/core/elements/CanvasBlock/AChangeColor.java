@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.elements.CanvasBlock;
 
 import com.raylib.Raylib.Color;
+import se.chalmers.group7.core.tools.Brush;
 import se.chalmers.group7.core.ui.model.MouseAction;
 
 public class AChangeColor extends MouseAction {
@@ -14,6 +15,9 @@ public class AChangeColor extends MouseAction {
 
   @Override
   public void onMouseLeftDown() {
-    canvas.getBrush().setDrawColor(color);
+    // Avoid crashing when "changing color" of eraser
+    if (canvas.getToolManager().getActiveTool() instanceof Brush) {
+      ((Brush) canvas.getToolManager().getActiveTool()).setColor(this.color);
+    }
   }
 }

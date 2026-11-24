@@ -137,8 +137,9 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
         previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
     strokeCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
 
+    // NOTE: conditional for LineTool where one needs to remember the initial
+    //  previousX and previousY variables
     if (update) {
-
       previousX = x;
       previousY = y;
     }

@@ -145,7 +145,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     return this.opacity;
   }
 
-  public Raylib.Color getColor() {
+  public Raylib.Color getRaylibColor() {
     Color drawColor = this.color.getValue();
     return ColorAlpha(drawColor, opacity.getValue());
   }
@@ -155,10 +155,10 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
 
     // explicitly uses REPLACE instead of "getBlendingMode()" - otherwise eraser doesn't work
     //  if you know blending modes and can explain, please explain it better
-    strokeCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
+    strokeCanvas.drawCircle(previousX, previousY, radius, getRaylibColor(), BlendingMode.REPLACE);
     strokeCanvas.drawLine(
-        previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
-    strokeCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
+        previousX, previousY, x, y, radius * 2.0f, getRaylibColor(), BlendingMode.REPLACE);
+    strokeCanvas.drawCircle(x, y, radius, getRaylibColor(), BlendingMode.REPLACE);
 
     previousX = x;
     previousY = y;

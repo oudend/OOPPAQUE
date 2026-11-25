@@ -37,7 +37,6 @@ public class MoveTool implements Tool {
 
   private LayerUtils.Handle activeHandle;
 
-  private Raylib.Vector2 layerEnterCoords;
   private Vector2 dragStartPosition;
   private Vector2 dragStartMouseWorld;
 
@@ -83,7 +82,6 @@ public class MoveTool implements Tool {
 
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
-    layerEnterCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
     dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
 
     dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
@@ -117,8 +115,9 @@ public class MoveTool implements Tool {
 
   private static final float SNAP_ENTER_DISTANCE = 20f;
   private static final float SNAP_EXIT_DISTANCE = 45f;
-  private static final float SNAP_SWITCH_THRESHOLD = 20f;
+  private static final float SNAP_SWITCH_THRESHOLD = 15f;
   private static final float SNAP_PREVIEW_DISTANCE = 15f;
+  private static final float SNAP_INTERSECTION_DISTANCE = 7.5f;
 
   private static final float SNAP_ANGLE_DEGREES = 90f;
   private static final float SNAP_ANGLE_THRESHOLD = 10f;
@@ -140,8 +139,12 @@ public class MoveTool implements Tool {
         List<MoveToolUtils.LineMatch> matches =
             MoveToolUtils.getAllAlignmentMatches(camera, layerManager, mouseIdeal);
 
-        MoveToolUtils.LineMatch closestMatch =
-            MoveToolUtils.findClosestMatchToMouse(camera, matches, mouseIdeal);
+        MoveToolUtils.AlignedLineMatches alignedLineMatches =
+            MoveToolUtils.alignedLineMatches(camera, matches, mouseIdeal);
+
+        MoveToolUtils.LineMatch closestMatch = alignedLineMatches.closest();
+
+        MoveToolUtils.LineMatch oppositeClosestMatch = alignedLineMatches.other();
 
         Float activeScreenDistance = null;
         Vector2 activeSlidingPosition = null;
@@ -176,6 +179,25 @@ public class MoveTool implements Tool {
             && closestScreenDistance < activeScreenDistance - SNAP_SWITCH_THRESHOLD) {
           activeMatch = closestMatch;
           activeSlidingPosition = closestSlidingPosition;
+        }
+
+        if (activeMatch != null) {
+          MoveToolUtils.LineMatch oppositeActiveMatch =
+              activeMatch.type() == closestMatch.type() ? oppositeClosestMatch : closestMatch;
+
+          Vector2 intersectionPosition =
+              MoveToolUtils.getIntersectionPosition(
+                  new Vector2().x(activeSlidingPosition.x()).y(activeSlidingPosition.y()),
+                  activeMatch,
+                  oppositeActiveMatch);
+
+          float intersectionScreenDistance =
+              Vector2Distance(
+                  camera.worldToScreen(activeSlidingPosition.x(), activeSlidingPosition.y()),
+                  camera.worldToScreen(intersectionPosition.x(), intersectionPosition.y()));
+
+          if (intersectionScreenDistance < SNAP_INTERSECTION_DISTANCE)
+            activeSlidingPosition = intersectionPosition;
         }
 
         List<MoveToolUtils.LineMatch> closeMatches =

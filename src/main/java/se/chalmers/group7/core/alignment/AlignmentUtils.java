@@ -1,6 +1,5 @@
 package se.chalmers.group7.core.alignment;
 
-import com.raylib.Raylib;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,22 +7,21 @@ import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerUtils;
 
 public class AlignmentUtils {
-  public static List<AlignmentLine> fromRectangle(
-      float x, float y, float width, float height, float angle) {
+  public static List<AlignmentLine> fromRectangle(float x, float y, float width, float height) {
     return List.of(
         new AlignmentLine[] {
-          new AlignmentLine(x, y, angle),
-          new AlignmentLine(x, y, angle + 90),
-          new AlignmentLine(x + width / 2, y + height / 2, angle),
-          new AlignmentLine(x + width / 2, y + height / 2, angle + 90),
-          new AlignmentLine(x, y + height, angle),
-          new AlignmentLine(x + width, y, angle + 90),
+          new AlignmentLine(x, y, AlignmentLineType.HORIZONTAL),
+          new AlignmentLine(x, y, AlignmentLineType.VERTICAL),
+          new AlignmentLine(x + width / 2, y + height / 2, AlignmentLineType.HORIZONTAL),
+          new AlignmentLine(x + width / 2, y + height / 2, AlignmentLineType.VERTICAL),
+          new AlignmentLine(x, y + height, AlignmentLineType.HORIZONTAL),
+          new AlignmentLine(x + width, y, AlignmentLineType.VERTICAL),
         });
   }
 
   public static List<AlignmentLine> fromLayer(Layer layer) {
     LayerUtils.BoundingBox box = LayerUtils.getBoundingBox(layer);
-    return fromRectangle(box.x(), box.y(), box.width(), box.height(), 0f);
+    return fromRectangle(box.x(), box.y(), box.width(), box.height());
   }
 
   public static List<AlignmentLine> fromLayers(List<Layer> layers) {
@@ -50,27 +48,5 @@ public class AlignmentUtils {
     float dy = b.y() - a.y();
 
     return (float) Math.abs(-dx * Math.sin(angle) + dy * Math.cos(angle));
-  }
-
-  public static Raylib.Vector2 getOffsetVector(AlignmentLine a, AlignmentLine b) {
-    double angle = Math.toRadians(a.angle());
-
-    // Unit normal vector (perpendicular to the lines)
-    double nx = -Math.sin(angle);
-    double ny = Math.cos(angle);
-
-    // Difference between points on the two lines
-    double dx = b.x() - a.x();
-    double dy = b.y() - a.y();
-
-    // Project onto the normal to get the shortest displacement
-    double distance = dx * nx + dy * ny;
-
-    return new Raylib.Vector2().x((float) (nx * distance)).y((float) (ny * distance));
-  }
-
-  public static boolean compareAlignment(
-      AlignmentLine a, AlignmentLine b, float aDiff, float pDist) {
-    return angularDifference(a.angle(), b.angle()) < aDiff && perpendicularDistance(a, b) < pDist;
   }
 }

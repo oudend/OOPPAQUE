@@ -29,7 +29,6 @@ public class AlignmentGuideRenderer implements ScreenOverlay {
 
     Raylib.Vector2 l = camera.worldToScreen(line.x(), line.y());
 
-    //    double angle = line.angle();
     double angle = Math.toRadians(line.angle());
 
     // Direction vector of the line

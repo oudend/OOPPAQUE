@@ -48,6 +48,19 @@ public class LayerGuideRenderer implements ScreenOverlay {
 
     RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f, BLUE);
 
+    LayerUtils.BoundingBox mainBox = LayerUtils.getBoundingBox(layer);
+
+    Raylib.Vector2 screenBoxPosition = camera.worldToScreen(mainBox.x(), mainBox.y());
+
+    Raylib.Rectangle boxDestination =
+        new Raylib.Rectangle()
+            .x(screenBoxPosition.x() + origin.x())
+            .y(screenBoxPosition.y() + origin.y())
+            .width(mainBox.width() * zoom)
+            .height(mainBox.height() * zoom);
+
+    RaylibUtils.DrawRectangleLinesPro(boxDestination, origin, 0f, 1f, BLUE);
+
     if (renderHandles) renderLayerHandles(camera, layer);
   }
 

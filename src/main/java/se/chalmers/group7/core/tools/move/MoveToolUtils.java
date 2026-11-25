@@ -6,7 +6,9 @@ import com.raylib.Raylib;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 import se.chalmers.group7.core.alignment.AlignmentLine;
+import se.chalmers.group7.core.alignment.AlignmentLineType;
 import se.chalmers.group7.core.alignment.AlignmentUtils;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
@@ -111,19 +113,15 @@ class MoveToolUtils {
               layer.getRotation());
 
       List<AlignmentLine> mainLines =
-          AlignmentUtils.fromRectangle(
-              mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height(), 0f);
-
-      //      List<AlignmentLine> mainLines = AlignmentUtils.fromRectangle(
-      //              mouseIdeal.x(), mouseIdeal.y(), layer.getWidth(), layer.getHeight(), angle);
+          AlignmentUtils.fromRectangle(mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height());
 
       return mainLines.get(index);
     }
   }
 
-  record LineMatch(MainLine mainLine, AlignmentLine comparisonLine, float distance) {}
+  record LineMatch(MainLine mainLine, AlignmentLine comparisonLine, AlignmentLineType type) {}
 
-  public static Vector2 getSlidingPosition(Vector2 mouseIdeal, MoveToolUtils.LineMatch match) {
+  public static Vector2 getSlidingPosition(Vector2 mouseIdeal, LineMatch match) {
     AlignmentLine main = match.mainLine().alignmentLine(mouseIdeal);
     AlignmentLine comparison = match.comparisonLine();
 
@@ -142,6 +140,39 @@ class MoveToolUtils {
         .y(mouseIdeal.y() + ny * signedPerpDist);
   }
 
+  public static Vector2 getIntersectionPosition(
+      Vector2 mouseIdeal, LineMatch first, LineMatch second) {
+    Vector2 p1 = getSlidingPosition(mouseIdeal, first);
+    Vector2 p2 = getSlidingPosition(mouseIdeal, second);
+
+    AlignmentLine line1 = first.mainLine().alignmentLine(mouseIdeal);
+    AlignmentLine line2 = second.mainLine().alignmentLine(mouseIdeal);
+
+    double a1 = Math.toRadians(line1.angle());
+    double a2 = Math.toRadians(line2.angle());
+
+    // Direction vectors of the two lines
+    double d1x = Math.cos(a1);
+    double d1y = Math.sin(a1);
+
+    double d2x = Math.cos(a2);
+    double d2y = Math.sin(a2);
+
+    // Solve p1 + t*d1 = p2 + u*d2
+    double denominator = d1x * d2y - d1y * d2x;
+
+    if (Math.abs(denominator) < 1e-9) {
+      return null; // Parallel lines: no unique intersection
+    }
+
+    double dx = p2.x() - p1.x();
+    double dy = p2.y() - p1.y();
+
+    double t = (dx * d2y - dy * d2x) / denominator;
+
+    return new Vector2().x((float) (p1.x() + t * d1x)).y((float) (p1.y() + t * d1y));
+  }
+
   public static List<LineMatch> findCloseMatches(
       Camera camera, List<MoveToolUtils.LineMatch> matches, Vector2 mouseIdeal, float minDistance) {
 
@@ -158,22 +189,56 @@ class MoveToolUtils {
         .toList();
   }
 
-  public static LineMatch findClosestMatchToMouse(
-      Camera camera, List<MoveToolUtils.LineMatch> matches, Vector2 mouseIdeal) {
+  public record AlignedLineMatches(LineMatch closest, LineMatch other) {}
 
-    return matches.stream()
-        .min(
-            Comparator.comparingDouble(match -> {
-              Vector2 slidingPosition = getSlidingPosition(mouseIdeal, match);
+  public static AlignedLineMatches alignedLineMatches(
+      Camera camera, List<LineMatch> matches, Vector2 mouseIdeal) {
 
-              Vector2 mouseScreen = camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y());
+    LineMatch horizontal =
+        closestMatchToMouse(
+            camera,
+            matches.stream().filter(match -> match.type() == AlignmentLineType.HORIZONTAL),
+            mouseIdeal);
 
-              Vector2 slidingScreen =
-                  camera.worldToScreen(slidingPosition.x(), slidingPosition.y());
+    LineMatch vertical =
+        closestMatchToMouse(
+            camera,
+            matches.stream().filter(match -> match.type() == AlignmentLineType.VERTICAL),
+            mouseIdeal);
 
-              return Vector2Distance(mouseScreen, slidingScreen);
-            }))
+    if (horizontal == null) {
+      return new AlignedLineMatches(vertical, null);
+    }
+
+    if (vertical == null) {
+      return new AlignedLineMatches(horizontal, null);
+    }
+
+    double horizontalDistance = getDistance(camera, horizontal, mouseIdeal);
+    double verticalDistance = getDistance(camera, vertical, mouseIdeal);
+
+    return horizontalDistance <= verticalDistance
+        ? new AlignedLineMatches(horizontal, vertical)
+        : new AlignedLineMatches(vertical, horizontal);
+  }
+
+  public static LineMatch closestMatchToMouse(
+      Camera camera, Stream<LineMatch> matches, Vector2 mouseIdeal) {
+
+    return matches
+        .min(Comparator.comparingDouble(match -> getDistance(camera, match, mouseIdeal)))
         .orElse(null);
+  }
+
+  private static double getDistance(Camera camera, LineMatch match, Vector2 mouseIdeal) {
+
+    Vector2 slidingPosition = getSlidingPosition(mouseIdeal, match);
+
+    Vector2 mouseScreen = camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y());
+
+    Vector2 slidingScreen = camera.worldToScreen(slidingPosition.x(), slidingPosition.y());
+
+    return Vector2Distance(mouseScreen, slidingScreen);
   }
 
   public static List<LineMatch> getAllAlignmentMatches(
@@ -184,8 +249,7 @@ class MoveToolUtils {
     List<AlignmentLine> comparisonLines = AlignmentUtils.fromLayers(comparisonLayers);
 
     List<AlignmentLine> workspaceLines =
-        AlignmentUtils.fromRectangle(
-            0, 0, camera.getViewportWidth(), camera.getViewportHeight(), 0);
+        AlignmentUtils.fromRectangle(0, 0, camera.getViewportWidth(), camera.getViewportHeight());
 
     comparisonLines.addAll(workspaceLines);
 
@@ -207,35 +271,25 @@ class MoveToolUtils {
             mainLayer.getRotation());
 
     List<AlignmentLine> mainLines =
-        AlignmentUtils.fromRectangle(
-            mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height(), 0f);
+        AlignmentUtils.fromRectangle(mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height());
 
     for (int i = 0; i < mainLines.size(); i++) {
       AlignmentLine mLine = mainLines.get(i);
 
       for (AlignmentLine cLine : comparisonLines) {
 
-        if (AlignmentUtils.angularDifference(mLine.angle(), cLine.angle()) > 0.001f) {
+        if (mLine.type() != cLine.type()) {
           continue;
         }
 
-        float distance = AlignmentUtils.perpendicularDistance(mLine, cLine);
-
         MainLine mainLine = new MainLine(mainLayer, i, mLine.angle());
 
-        if (isHorizontal(mLine)) {
-          matches.add(new LineMatch(mainLine, cLine, distance));
-        } else {
-          matches.add(new LineMatch(mainLine, cLine, distance));
+        switch (mLine.type()) {
+          case HORIZONTAL, VERTICAL -> matches.add(new LineMatch(mainLine, cLine, mLine.type()));
         }
       }
     }
 
     return matches;
-  }
-
-  private static boolean isHorizontal(AlignmentLine line) {
-    float angle = Math.abs(line.angle()) % 180f;
-    return angle < 45f || angle > 135f;
   }
 }

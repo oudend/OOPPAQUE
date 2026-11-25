@@ -84,35 +84,24 @@ class RadialColorPicker {
     float min = Math.min(rf, Math.min(gf, bf));
     float d = max - min;
     float h;
-    if (d == 0)
-      h = hue; // grey: keep current hue
-    else if (max == rf)
-      h = 60f * (((gf - bf) / d) % 6f);
-    else if (max == gf)
-      h = 60f * (((bf - rf) / d) + 2f);
-    else
-      h = 60f * (((rf - gf) / d) + 4f);
-    if (h < 0)
-      h += 360f;
+    if (d == 0) h = hue; // grey: keep current hue
+    else if (max == rf) h = 60f * (((gf - bf) / d) % 6f);
+    else if (max == gf) h = 60f * (((bf - rf) / d) + 2f);
+    else h = 60f * (((rf - gf) / d) + 4f);
+    if (h < 0) h += 360f;
     hue = h;
     sat = max == 0 ? 0 : d / max;
     val = max;
   }
 
-  /**
-   * Call once per frame between BeginDrawing/EndDrawing. Returns true if the
-   * color changed.
-   */
+  /** Call once per frame between BeginDrawing/EndDrawing. Returns true if the color changed. */
   public boolean draw() {
     boolean changed = handleInput();
     render();
     return changed;
   }
 
-  /**
-   * True if the mouse is over the picker (use this to stop the canvas from
-   * painting).
-   */
+  /** True if the mouse is over the picker (use this to stop the canvas from painting). */
   public boolean isMouseOver() {
     Vector2 m = GetMousePosition();
     float dx = m.x() - cx, dy = m.y() - cy;
@@ -139,15 +128,13 @@ class RadialColorPicker {
 
   private static float angleOf(float dx, float dy) {
     double a = Math.toDegrees(Math.atan2(dy, dx));
-    if (a < 0)
-      a += 360;
+    if (a < 0) a += 360;
     return (float) a;
   }
 
   private float valueFromAngle(float angle) {
     float a = angle;
-    if (a < GAUGE_START)
-      a += 360f;
+    if (a < GAUGE_START) a += 360f;
     float end = GAUGE_START + GAUGE_SWEEP; // 405
     if (a > end) { // inside the bottom gap: snap to nearest end
       float mid = end + (360f - GAUGE_SWEEP) / 2f; // 450
@@ -169,24 +156,20 @@ class RadialColorPicker {
         drag = Drag.WHEEL;
       } else if (dist >= gaugeInner() - 4 && dist <= gaugeOuter() + 4) {
         float a = ang < GAUGE_START ? ang + 360f : ang;
-        if (a <= GAUGE_START + GAUGE_SWEEP + 6f)
-          drag = Drag.VALUE;
+        if (a <= GAUGE_START + GAUGE_SWEEP + 6f) drag = Drag.VALUE;
       }
     }
-    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-      drag = Drag.NONE;
+    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT)) drag = Drag.NONE;
 
     boolean changed = false;
     if (drag == Drag.WHEEL) {
       float newSat = clamp01(dist / wheelRadius());
-      if (newSat != sat || ang != hue)
-        changed = true;
+      if (newSat != sat || ang != hue) changed = true;
       hue = ang;
       sat = newSat;
     } else if (drag == Drag.VALUE) {
       float newVal = valueFromAngle(ang);
-      if (newVal != val)
-        changed = true;
+      if (newVal != val) changed = true;
       val = newVal;
     }
 
@@ -205,8 +188,7 @@ class RadialColorPicker {
     DrawCircleV(center, radius + 10, col(28, 28, 32, 255));
     DrawCircleLines((int) cx, (int) cy, radius + 10, col(70, 70, 80, 255));
 
-    if (bakedRadius != radius)
-      bake();
+    if (bakedRadius != radius) bake();
 
     int v = Math.round(val * 255f);
     drawBaked(wheelTex, col(v, v, v, 255));
@@ -328,7 +310,7 @@ class RadialColorPicker {
       b = x;
     }
     return new int[] {
-        Math.round((r + m) * 255f), Math.round((g + m) * 255f), Math.round((b + m) * 255f)
+      Math.round((r + m) * 255f), Math.round((g + m) * 255f), Math.round((b + m) * 255f)
     };
   }
 
@@ -380,7 +362,8 @@ class RadialColorPicker {
   private void drawBaked(RenderTexture rt, Color tint) {
     // render textures are upside down, so the source height is negative
     Rectangle src = new Rectangle().x(0).y(0).width(texSize).height(-texSize);
-    Rectangle dst = new Rectangle().x(cx - texSize / 2f).y(cy - texSize / 2f).width(texSize).height(texSize);
+    Rectangle dst =
+        new Rectangle().x(cx - texSize / 2f).y(cy - texSize / 2f).width(texSize).height(texSize);
     DrawTexturePro(rt.texture(), src, dst, new Vector2().x(0).y(0), 0f, tint);
   }
 }

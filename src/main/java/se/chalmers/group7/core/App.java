@@ -31,19 +31,42 @@ public class App {
 
     BoxBlock rootBox = new BoxBlock(new BoxProperties().setColor(DARKGRAY), width, height, 0, 0);
 
-    BoxBlock canvasBox =
-        new BoxBlock(
-            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
-            width,
-            height,
-            0,
-            0);
+    BoxBlock canvasBox = new BoxBlock(
+        new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+        width / 2,
+        height,
+        0,
+        0);
 
+    BoxBlock sideBox = new BoxBlock(
+        new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+        width / 2,
+        height,
+        0,
+        0);
+
+    rootBox.addChild(sideBox);
     rootBox.addChild(canvasBox);
 
-    CanvasBlock canvas = new CanvasBlock(width - 40, height - 40, 20, 20);
+    // Add canvas to canvas box
+    CanvasBlock canvas = new CanvasBlock(width, height, 20, 20);
     canvas.addAction(new ACanvasInput(canvas, debug));
     canvasBox.addChild(canvas);
+
+    // Add slider to sidebar
+    Slider slider = new Slider(200, 50, 50, 5, 0, 1, 0);
+
+    sideBox.addAction(
+        new Action() {
+          @Override
+          public void executeAction(Input input) {
+            if (IsKeyDown(KEY_B)) {
+              rlCheckErrors();
+            }
+          }
+        });
+
+    sideBox.addChild(slider);
 
     root = rootBox;
     if (debug) {

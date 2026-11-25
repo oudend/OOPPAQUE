@@ -1,6 +1,7 @@
-package se.chalmers.group7.core.rendering;
+package se.chalmers.group7.core.rendering.overlays;
 
 import java.util.List;
+import se.chalmers.group7.core.rendering.Camera;
 
 public class CompositeScreenOverlay implements ScreenOverlay {
   List<ScreenOverlay> overlays;

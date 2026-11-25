@@ -85,12 +85,13 @@ public class LayerUtils {
   public record BoundingBox(float x, float y, float width, float height) {}
 
   public static BoundingBox getBoundingBox(Layer layer) {
-    double x = layer.getX();
-    double y = layer.getY();
-    double width = layer.getWidth();
-    double height = layer.getHeight();
+    return getBoundingBox(
+        layer.getX(), layer.getY(), layer.getWidth(), layer.getHeight(), layer.getRotation());
+  }
 
-    double angle = Math.toRadians(layer.getRotation());
+  public static BoundingBox getBoundingBox(
+      float x, float y, float width, float height, float rotation) {
+    double angle = Math.toRadians(rotation);
 
     double cos = Math.abs(Math.cos(angle));
     double sin = Math.abs(Math.sin(angle));

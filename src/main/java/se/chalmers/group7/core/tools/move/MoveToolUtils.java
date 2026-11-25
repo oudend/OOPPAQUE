@@ -1,7 +1,6 @@
 package se.chalmers.group7.core.tools.move;
 
 import static com.raylib.Raylib.*;
-import static com.raylib.Raylib.Vector2Distance;
 
 import com.raylib.Raylib;
 import java.util.ArrayList;
@@ -10,11 +9,13 @@ import java.util.List;
 import se.chalmers.group7.core.alignment.AlignmentLine;
 import se.chalmers.group7.core.alignment.AlignmentUtils;
 import se.chalmers.group7.core.layers.Layer;
+import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerTransform;
+import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.layers.LayerUtils.Handle;
 import se.chalmers.group7.core.rendering.Camera;
 
-public class MoveToolUtils {
+class MoveToolUtils {
   public static void resizeLayer(
       Camera camera,
       Layer layer,
@@ -98,17 +99,120 @@ public class MoveToolUtils {
     layer.setHeight(Math.round(newHeight));
   }
 
-  record LineMatch(AlignmentLine mainLine, AlignmentLine comparisonLine, float distance) {}
+  record MainLine(Layer layer, int index, float angle) {
+    public AlignmentLine alignmentLine(Vector2 mouseIdeal) {
 
-  public static List<LineMatch> findBestMatches(
-      List<AlignmentLine> mainLines,
-      List<AlignmentLine> comparisonLines,
-      float maxDistance,
-      float tolerance) {
-    //    List<LineMatch> horizontal = new ArrayList<>();
+      LayerUtils.BoundingBox mainBox =
+          LayerUtils.getBoundingBox(
+              mouseIdeal.x(),
+              mouseIdeal.y(),
+              layer.getWidth(),
+              layer.getHeight(),
+              layer.getRotation());
+
+      List<AlignmentLine> mainLines =
+          AlignmentUtils.fromRectangle(
+              mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height(), 0f);
+
+      //      List<AlignmentLine> mainLines = AlignmentUtils.fromRectangle(
+      //              mouseIdeal.x(), mouseIdeal.y(), layer.getWidth(), layer.getHeight(), angle);
+
+      return mainLines.get(index);
+    }
+  }
+
+  record LineMatch(MainLine mainLine, AlignmentLine comparisonLine, float distance) {}
+
+  public static Vector2 getSlidingPosition(Vector2 mouseIdeal, MoveToolUtils.LineMatch match) {
+    AlignmentLine main = match.mainLine().alignmentLine(mouseIdeal);
+    AlignmentLine comparison = match.comparisonLine();
+
+    double angle = Math.toRadians(main.angle());
+    float nx = (float) -Math.sin(angle);
+    float ny = (float) Math.cos(angle);
+
+    float dx = comparison.x() - main.x();
+    float dy = comparison.y() - main.y();
+
+    // Signed distance along normal from main -> comparison
+    float signedPerpDist = dx * nx + dy * ny;
+
+    return new Vector2()
+        .x(mouseIdeal.x() + nx * signedPerpDist)
+        .y(mouseIdeal.y() + ny * signedPerpDist);
+  }
+
+  public static List<LineMatch> findCloseMatches(
+      Camera camera, List<MoveToolUtils.LineMatch> matches, Vector2 mouseIdeal, float minDistance) {
+
+    return matches.stream()
+        .filter(match -> {
+          Vector2 slidingPosition = getSlidingPosition(mouseIdeal, (LineMatch) match);
+
+          Vector2 mouseScreen = camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y());
+
+          Vector2 slidingScreen = camera.worldToScreen(slidingPosition.x(), slidingPosition.y());
+
+          return Vector2Distance(mouseScreen, slidingScreen) < minDistance;
+        })
+        .toList();
+  }
+
+  public static LineMatch findClosestMatchToMouse(
+      Camera camera, List<MoveToolUtils.LineMatch> matches, Vector2 mouseIdeal) {
+
+    return matches.stream()
+        .min(
+            Comparator.comparingDouble(match -> {
+              Vector2 slidingPosition = getSlidingPosition(mouseIdeal, match);
+
+              Vector2 mouseScreen = camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y());
+
+              Vector2 slidingScreen =
+                  camera.worldToScreen(slidingPosition.x(), slidingPosition.y());
+
+              return Vector2Distance(mouseScreen, slidingScreen);
+            }))
+        .orElse(null);
+  }
+
+  public static List<LineMatch> getAllAlignmentMatches(
+      Camera camera, LayerManager layerManager, Vector2 mouseIdeal) {
+    List<Layer> comparisonLayers = new ArrayList<>(layerManager.getLayers());
+    comparisonLayers.remove(layerManager.getActiveLayerIndex());
+
+    List<AlignmentLine> comparisonLines = AlignmentUtils.fromLayers(comparisonLayers);
+
+    List<AlignmentLine> workspaceLines =
+        AlignmentUtils.fromRectangle(
+            0, 0, camera.getViewportWidth(), camera.getViewportHeight(), 0);
+
+    comparisonLines.addAll(workspaceLines);
+
+    Layer activeLayer = layerManager.getActiveLayer();
+
+    return MoveToolUtils.getAllAlignmentMatches(activeLayer, comparisonLines, mouseIdeal);
+  }
+
+  public static List<LineMatch> getAllAlignmentMatches(
+      Layer mainLayer, List<AlignmentLine> comparisonLines, Vector2 mouseIdeal) {
     List<LineMatch> matches = new ArrayList<>();
 
-    for (AlignmentLine mLine : mainLines) {
+    LayerUtils.BoundingBox mainBox =
+        LayerUtils.getBoundingBox(
+            mouseIdeal.x(),
+            mouseIdeal.y(),
+            mainLayer.getWidth(),
+            mainLayer.getHeight(),
+            mainLayer.getRotation());
+
+    List<AlignmentLine> mainLines =
+        AlignmentUtils.fromRectangle(
+            mainBox.x(), mainBox.y(), mainBox.width(), mainBox.height(), 0f);
+
+    for (int i = 0; i < mainLines.size(); i++) {
+      AlignmentLine mLine = mainLines.get(i);
+
       for (AlignmentLine cLine : comparisonLines) {
 
         if (AlignmentUtils.angularDifference(mLine.angle(), cLine.angle()) > 0.001f) {
@@ -117,75 +221,21 @@ public class MoveToolUtils {
 
         float distance = AlignmentUtils.perpendicularDistance(mLine, cLine);
 
-        if (distance >= maxDistance) {
-          continue;
-        }
+        MainLine mainLine = new MainLine(mainLayer, i, mLine.angle());
 
-        // Classify based on the main line orientation
         if (isHorizontal(mLine)) {
-          matches.add(new LineMatch(mLine, cLine, distance));
+          matches.add(new LineMatch(mainLine, cLine, distance));
         } else {
-          matches.add(new LineMatch(mLine, cLine, distance));
+          matches.add(new LineMatch(mainLine, cLine, distance));
         }
       }
     }
 
-    return getBestMatches(matches, tolerance);
-  }
-
-  private static List<LineMatch> getBestMatches(List<LineMatch> matches, float tolerance) {
-    if (matches.isEmpty()) {
-      return List.of();
-    }
-
-    float minDistance = matches.stream().map(LineMatch::distance).min(Float::compare).orElseThrow();
-
-    return matches.stream()
-        .filter(m -> m.distance() <= minDistance + tolerance)
-        .sorted(Comparator.comparingDouble(LineMatch::distance))
-        .toList();
+    return matches;
   }
 
   private static boolean isHorizontal(AlignmentLine line) {
     float angle = Math.abs(line.angle()) % 180f;
     return angle < 45f || angle > 135f;
-  }
-
-  public static boolean align(
-      Camera camera,
-      Layer activeLayer,
-      Vector2 mouseIdeal,
-      AlignmentLine main,
-      AlignmentLine comparison) {
-    Raylib.Vector2 alignmentDelta = AlignmentUtils.getOffsetVector(comparison, main);
-
-    Raylib.Vector2 alignmentIdeal =
-        Vector2Add(new Vector2().x(activeLayer.getX()).y(activeLayer.getY()), alignmentDelta);
-
-    float angle = (float) Math.toRadians(main.angle());
-
-    Raylib.Vector2 direction = new Vector2().x((float) Math.cos(angle)).y((float) Math.sin(angle));
-
-    Raylib.Vector2 delta = Vector2Subtract(mouseIdeal, alignmentIdeal);
-
-    float projection = delta.x() * direction.x() + delta.y() * direction.y();
-
-    Raylib.Vector2 slidingPosition =
-        Vector2Add(alignmentIdeal, Vector2Scale(direction, projection));
-
-    float screenDistance =
-        Vector2Distance(
-            camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
-            camera.worldToScreen(slidingPosition.x(), slidingPosition.y()));
-
-    if (screenDistance < 40f) {
-      activeLayer.setX(Math.round(slidingPosition.x()));
-
-      activeLayer.setY(Math.round(slidingPosition.y()));
-
-      return true;
-    }
-
-    return false;
   }
 }

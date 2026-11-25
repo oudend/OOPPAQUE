@@ -1,4 +1,4 @@
-package se.chalmers.group7.core.rendering;
+package se.chalmers.group7.core.rendering.overlays;
 
 import static com.raylib.Colors.*;
 
@@ -6,6 +6,7 @@ import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerUtils;
+import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.utils.RaylibUtils;
 
 public class LayerGuideRenderer implements ScreenOverlay {

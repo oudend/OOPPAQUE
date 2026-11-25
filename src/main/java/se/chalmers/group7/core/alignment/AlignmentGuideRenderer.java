@@ -6,7 +6,7 @@ import com.raylib.Raylib;
 import java.util.ArrayList;
 import java.util.List;
 import se.chalmers.group7.core.rendering.Camera;
-import se.chalmers.group7.core.rendering.ScreenOverlay;
+import se.chalmers.group7.core.rendering.overlays.ScreenOverlay;
 
 public class AlignmentGuideRenderer implements ScreenOverlay {
   private List<AlignmentLine> lines = new ArrayList<>();

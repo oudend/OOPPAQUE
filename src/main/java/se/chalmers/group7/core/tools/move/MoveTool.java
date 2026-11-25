@@ -3,13 +3,9 @@ package se.chalmers.group7.core.tools.move;
 import static com.raylib.Raylib.*;
 
 import com.raylib.Raylib;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import se.chalmers.group7.core.alignment.AlignmentGuideRenderer;
 import se.chalmers.group7.core.alignment.AlignmentLine;
-import se.chalmers.group7.core.alignment.AlignmentUtils;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerTransform;
@@ -17,9 +13,9 @@ import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.operations.LayerTransformOperation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
-import se.chalmers.group7.core.rendering.CompositeScreenOverlay;
-import se.chalmers.group7.core.rendering.LayerGuideRenderer;
-import se.chalmers.group7.core.rendering.ScreenOverlay;
+import se.chalmers.group7.core.rendering.overlays.CompositeScreenOverlay;
+import se.chalmers.group7.core.rendering.overlays.LayerGuideRenderer;
+import se.chalmers.group7.core.rendering.overlays.ScreenOverlay;
 import se.chalmers.group7.core.tools.Tool;
 import se.chalmers.group7.core.ui.controller.Input;
 
@@ -42,6 +38,8 @@ public class MoveTool implements Tool {
   private LayerUtils.Handle activeHandle;
 
   private Raylib.Vector2 layerEnterCoords;
+  private Vector2 dragStartPosition;
+  private Vector2 dragStartMouseWorld;
 
   private final LayerGuideRenderer guideOverlay;
   private final AlignmentGuideRenderer alignmentOverlay;
@@ -86,6 +84,10 @@ public class MoveTool implements Tool {
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
     layerEnterCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
+    dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
+
+    dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
+    dragStartMouseWorld = worldVector;
 
     LayerUtils.Handle nearestHandle =
         LayerUtils.getNearestHandle(activeLayer, camera, worldVector.x(), worldVector.y());
@@ -113,21 +115,15 @@ public class MoveTool implements Tool {
     initialTransform = activeLayer.getLayerTransform();
   }
 
-  private List<MoveToolUtils.LineMatch> getAlignmentLines() {
-    List<Layer> comparisonLayers = new ArrayList<>(layerManager.getLayers());
-    comparisonLayers.remove(layerManager.getActiveLayerIndex());
+  private static final float SNAP_ENTER_DISTANCE = 20f;
+  private static final float SNAP_EXIT_DISTANCE = 45f;
+  private static final float SNAP_SWITCH_THRESHOLD = 20f;
+  private static final float SNAP_PREVIEW_DISTANCE = 15f;
 
-    List<AlignmentLine> comparisonLines = AlignmentUtils.fromLayers(comparisonLayers);
-    List<AlignmentLine> workspaceLines =
-        AlignmentUtils.fromRectangle(
-            0, 0, camera.getViewportWidth(), camera.getViewportHeight(), 0);
+  private static final float SNAP_ANGLE_DEGREES = 90f;
+  private static final float SNAP_ANGLE_THRESHOLD = 10f;
 
-    comparisonLines.addAll(workspaceLines);
-
-    List<AlignmentLine> mainLines = AlignmentUtils.fromLayer(layerManager.getActiveLayer());
-
-    return MoveToolUtils.findBestMatches(mainLines, comparisonLines, 5f, 0.001f);
-  }
+  private MoveToolUtils.LineMatch activeMatch;
 
   public void onPointerMove(int x, int y) {
     if (activeLayerIndex == -1) return;
@@ -136,59 +132,75 @@ public class MoveTool implements Tool {
 
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
-    List<MoveToolUtils.LineMatch> matches = getAlignmentLines();
-
-    if (!matches.isEmpty()) {
-      List<AlignmentLine> comparisonLines =
-          matches.stream().map(MoveToolUtils.LineMatch::comparisonLine).toList();
-
-      alignmentOverlay.setLines(comparisonLines);
-    } else {
-      alignmentOverlay.setLines(Collections.emptyList());
-    }
-
     switch (transformType) {
       case MOVE:
-        Raylib.Vector2 layerEnterWorld =
-            Camera.layerCoordinatesToWorld(activeLayer, layerEnterCoords.x(), layerEnterCoords.y());
+        Raylib.Vector2 mouseDelta = Vector2Subtract(worldVector, dragStartMouseWorld);
+        Raylib.Vector2 mouseIdeal = Vector2Add(dragStartPosition, mouseDelta);
 
-        Raylib.Vector2 mouseDelta = Vector2Subtract(worldVector, layerEnterWorld);
+        List<MoveToolUtils.LineMatch> matches =
+            MoveToolUtils.getAllAlignmentMatches(camera, layerManager, mouseIdeal);
 
-        Raylib.Vector2 mouseIdeal =
-            Vector2Add(new Vector2().x(activeLayer.getX()).y(activeLayer.getY()), mouseDelta);
+        MoveToolUtils.LineMatch closestMatch =
+            MoveToolUtils.findClosestMatchToMouse(camera, matches, mouseIdeal);
 
-        if (!matches.isEmpty()) {
-          AlignmentLine main = matches.getFirst().mainLine();
-          AlignmentLine comparison = matches.getFirst().comparisonLine();
+        Float activeScreenDistance = null;
+        Vector2 activeSlidingPosition = null;
 
-          Raylib.Vector2 alignmentDelta = AlignmentUtils.getOffsetVector(comparison, main);
+        if (activeMatch != null) {
+          activeSlidingPosition = MoveToolUtils.getSlidingPosition(mouseIdeal, activeMatch);
 
-          Raylib.Vector2 alignmentIdeal =
-              Vector2Add(new Vector2().x(activeLayer.getX()).y(activeLayer.getY()), alignmentDelta);
-
-          float angle = (float) Math.toRadians(main.angle());
-
-          Raylib.Vector2 direction =
-              new Vector2().x((float) Math.cos(angle)).y((float) Math.sin(angle));
-
-          Raylib.Vector2 delta = Vector2Subtract(mouseIdeal, alignmentIdeal);
-
-          float projection = delta.x() * direction.x() + delta.y() * direction.y();
-
-          Raylib.Vector2 slidingPosition =
-              Vector2Add(alignmentIdeal, Vector2Scale(direction, projection));
-
-          float screenDistance =
+          activeScreenDistance =
               Vector2Distance(
                   camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
-                  camera.worldToScreen(slidingPosition.x(), slidingPosition.y()));
+                  camera.worldToScreen(activeSlidingPosition.x(), activeSlidingPosition.y()));
+        }
 
-          if (screenDistance < 40f) {
-            activeLayer.setX(Math.round(slidingPosition.x()));
+        Vector2 closestSlidingPosition = MoveToolUtils.getSlidingPosition(mouseIdeal, closestMatch);
 
-            activeLayer.setY(Math.round(slidingPosition.y()));
-            break;
+        float closestScreenDistance =
+            Vector2Distance(
+                camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
+                camera.worldToScreen(closestSlidingPosition.x(), closestSlidingPosition.y()));
+
+        if (activeMatch != null) {
+          if (activeScreenDistance > SNAP_EXIT_DISTANCE) {
+            activeMatch = null;
           }
+        }
+        if (activeMatch == null) {
+          if (closestScreenDistance < SNAP_ENTER_DISTANCE) {
+            activeMatch = closestMatch;
+            activeSlidingPosition = closestSlidingPosition;
+          }
+        } else if (activeMatch != closestMatch
+            && closestScreenDistance < activeScreenDistance - SNAP_SWITCH_THRESHOLD) {
+          activeMatch = closestMatch;
+          activeSlidingPosition = closestSlidingPosition;
+        }
+
+        List<MoveToolUtils.LineMatch> closeMatches =
+            MoveToolUtils.findCloseMatches(
+                camera,
+                matches,
+                mouseIdeal,
+                activeMatch == null
+                    ? SNAP_ENTER_DISTANCE + SNAP_PREVIEW_DISTANCE
+                    : SNAP_EXIT_DISTANCE + SNAP_PREVIEW_DISTANCE);
+
+        if (!closeMatches.isEmpty()) {
+          List<AlignmentLine> comparisonLines =
+              closeMatches.stream().map(MoveToolUtils.LineMatch::comparisonLine).toList();
+
+          alignmentOverlay.setLines(comparisonLines);
+        } else {
+          alignmentOverlay.setLines(Collections.emptyList());
+        }
+
+        if (activeMatch != null) {
+          activeLayer.setX((int) activeSlidingPosition.x());
+
+          activeLayer.setY((int) activeSlidingPosition.y());
+          break;
         }
 
         activeLayer.setX((int) mouseIdeal.x());
@@ -204,11 +216,16 @@ public class MoveTool implements Tool {
 
         Raylib.Vector2 mouseWorld = camera.screenToWorld(x, y);
 
-        float angle =
+        float targetAngle =
             (float) Math.toDegrees(Math.atan2(mouseWorld.y() - centerY, mouseWorld.x() - centerX))
                 + 90f;
 
-        activeLayer.setRotation(angle);
+        float closestSnapAngle = Math.round(targetAngle / SNAP_ANGLE_DEGREES) * SNAP_ANGLE_DEGREES;
+
+        if (Math.abs(closestSnapAngle - targetAngle) < SNAP_ANGLE_THRESHOLD)
+          targetAngle = closestSnapAngle;
+
+        activeLayer.setRotation(targetAngle);
         break;
     }
   }
@@ -219,6 +236,8 @@ public class MoveTool implements Tool {
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
     LayerTransform finalTransform = LayerTransform.from(activeLayer);
+
+    alignmentOverlay.setLines(Collections.emptyList());
 
     if (!initialTransform.equals(finalTransform)) {
       LayerTransformOperation operation =

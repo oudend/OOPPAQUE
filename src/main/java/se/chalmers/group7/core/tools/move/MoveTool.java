@@ -126,7 +126,7 @@ public class MoveTool implements Tool {
   private static final float SNAP_ANGLE_DEGREES = 90f;
   private static final float SNAP_ANGLE_THRESHOLD = 10f;
 
-  private MoveToolUtils.LineMatch activeMatch;
+  private MoveAlignmentUtils.LineMatch activeMatch;
 
   public void onPointerMove(int x, int y) {
     if (activeLayerIndex == -1) return;
@@ -140,21 +140,21 @@ public class MoveTool implements Tool {
         Raylib.Vector2 mouseDelta = Vector2Subtract(worldVector, dragStartMouseWorld);
         Raylib.Vector2 mouseIdeal = Vector2Add(dragStartPosition, mouseDelta);
 
-        List<MoveToolUtils.LineMatch> matches =
-            MoveToolUtils.getAllAlignmentMatches(camera, layerManager, mouseIdeal);
+        List<MoveAlignmentUtils.LineMatch> matches =
+            MoveAlignmentUtils.getAllAlignmentMatches(camera, layerManager, mouseIdeal);
 
-        MoveToolUtils.AlignedLineMatches alignedLineMatches =
-            MoveToolUtils.alignedLineMatches(camera, matches, mouseIdeal);
+        MoveAlignmentUtils.AlignedLineMatches alignedLineMatches =
+            MoveAlignmentUtils.alignedLineMatches(camera, matches, mouseIdeal);
 
-        MoveToolUtils.LineMatch closestMatch = alignedLineMatches.closest();
+        MoveAlignmentUtils.LineMatch closestMatch = alignedLineMatches.closest();
 
-        MoveToolUtils.LineMatch oppositeClosestMatch = alignedLineMatches.other();
+        MoveAlignmentUtils.LineMatch oppositeClosestMatch = alignedLineMatches.other();
 
         Float activeScreenDistance = null;
         Vector2 activeSlidingPosition = null;
 
         if (activeMatch != null) {
-          activeSlidingPosition = MoveToolUtils.getSlidingPosition(mouseIdeal, activeMatch);
+          activeSlidingPosition = MoveAlignmentUtils.getSlidingPosition(mouseIdeal, activeMatch);
 
           activeScreenDistance =
               Vector2Distance(
@@ -162,7 +162,8 @@ public class MoveTool implements Tool {
                   camera.worldToScreen(activeSlidingPosition.x(), activeSlidingPosition.y()));
         }
 
-        Vector2 closestSlidingPosition = MoveToolUtils.getSlidingPosition(mouseIdeal, closestMatch);
+        Vector2 closestSlidingPosition =
+            MoveAlignmentUtils.getSlidingPosition(mouseIdeal, closestMatch);
 
         float closestScreenDistance =
             Vector2Distance(
@@ -186,11 +187,11 @@ public class MoveTool implements Tool {
         }
 
         if (activeMatch != null) {
-          MoveToolUtils.LineMatch oppositeActiveMatch =
+          MoveAlignmentUtils.LineMatch oppositeActiveMatch =
               activeMatch.type() == closestMatch.type() ? oppositeClosestMatch : closestMatch;
 
           Vector2 intersectionPosition =
-              MoveToolUtils.getIntersectionPosition(
+              MoveAlignmentUtils.getIntersectionPosition(
                   new Vector2().x(activeSlidingPosition.x()).y(activeSlidingPosition.y()),
                   activeMatch,
                   oppositeActiveMatch);
@@ -204,8 +205,8 @@ public class MoveTool implements Tool {
             activeSlidingPosition = intersectionPosition;
         }
 
-        List<MoveToolUtils.LineMatch> closeMatches =
-            MoveToolUtils.findCloseMatches(
+        List<MoveAlignmentUtils.LineMatch> closeMatches =
+            MoveAlignmentUtils.findCloseMatches(
                 camera,
                 matches,
                 mouseIdeal,
@@ -215,7 +216,7 @@ public class MoveTool implements Tool {
 
         if (!closeMatches.isEmpty() && snappingEnabled) {
           List<AlignmentLine> comparisonLines =
-              closeMatches.stream().map(MoveToolUtils.LineMatch::comparisonLine).toList();
+              closeMatches.stream().map(MoveAlignmentUtils.LineMatch::comparisonLine).toList();
 
           alignmentOverlay.setLines(comparisonLines);
         } else {
@@ -234,7 +235,8 @@ public class MoveTool implements Tool {
         activeLayer.setY((int) mouseIdeal.y());
         break;
       case RESIZE:
-        MoveToolUtils.resizeLayer(camera, activeLayer, initialTransform, activeHandle, x, y);
+        RotationUtils.resizeLayer(
+            camera, activeLayer, layerManager.getLayers(), initialTransform, activeHandle, x, y);
         break;
       case ROTATE:
         float centerX = activeLayer.getX() + activeLayer.getWidth() / 2f;

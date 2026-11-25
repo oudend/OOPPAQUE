@@ -59,7 +59,8 @@ public class LayerGuideRenderer implements ScreenOverlay {
             .width(mainBox.width() * zoom)
             .height(mainBox.height() * zoom);
 
-    RaylibUtils.DrawRectangleLinesPro(boxDestination, origin, 0f, 1f, BLUE);
+    RaylibUtils.DrawRectangleLinesPro(
+        boxDestination, origin, 0f, 1f, Raylib.ColorAlpha(BLUE, 0.25f));
 
     if (renderHandles) renderLayerHandles(camera, layer);
   }

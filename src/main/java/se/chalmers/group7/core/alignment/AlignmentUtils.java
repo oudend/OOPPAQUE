@@ -1,5 +1,6 @@
 package se.chalmers.group7.core.alignment;
 
+import com.raylib.Raylib;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,17 +37,39 @@ public class AlignmentUtils {
     return lines;
   }
 
-  public static float angularDifference(float a1, float a2) {
-    float diff = Math.abs(a1 - a2) % 180;
-    return Math.min(diff, 180 - diff);
+  public static Raylib.Vector2 closestPointOnLines(
+      Raylib.Vector2 point, List<AlignmentLine> lines) {
+    float closestScreenDistance = 0f;
+    Raylib.Vector2 closestPoint = null;
+
+    for (AlignmentLine alignmentLine : lines) {
+      Raylib.Vector2 p = AlignmentUtils.closestPointOnLine(point, alignmentLine);
+
+      float screenDistance = Raylib.Vector2Distance(p, point);
+
+      if (closestPoint == null || screenDistance < closestScreenDistance) {
+        closestPoint = p;
+        closestScreenDistance = screenDistance;
+      }
+    }
+
+    return closestPoint != null ? closestPoint : point;
   }
 
-  public static float perpendicularDistance(AlignmentLine a, AlignmentLine b) {
-    double angle = Math.toRadians(a.angle());
+  public static Raylib.Vector2 closestPointOnLine(Raylib.Vector2 point, AlignmentLine line) {
+    double angle = Math.toRadians(line.angle());
 
-    float dx = b.x() - a.x();
-    float dy = b.y() - a.y();
+    // Direction vector of the line
+    float dx = (float) Math.cos(angle);
+    float dy = (float) Math.sin(angle);
 
-    return (float) Math.abs(-dx * Math.sin(angle) + dy * Math.cos(angle));
+    // Vector from line origin to point
+    float px = point.x() - line.x();
+    float py = point.y() - line.y();
+
+    // Project onto direction vector
+    float t = px * dx + py * dy;
+
+    return new Raylib.Vector2().x(line.x() + t * dx).y(line.y() + t * dy);
   }
 }

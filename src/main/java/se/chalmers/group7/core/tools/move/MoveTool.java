@@ -44,6 +44,8 @@ public class MoveTool implements Tool {
   private final AlignmentGuideRenderer alignmentOverlay;
   private final CompositeScreenOverlay screenOverlay;
 
+  private boolean snappingEnabled = true;
+
   public MoveTool(LayerManager layerManager, OperationManager operationManager, Camera camera) {
     this.layerManager = layerManager;
     this.camera = camera;
@@ -66,6 +68,8 @@ public class MoveTool implements Tool {
     if ((input.deltaX() * input.deltaX() + input.deltaY() * input.deltaY()) > GetFrameTime()) {
       onPointerMove(input.xPos(), input.yPos());
     }
+
+    snappingEnabled = !input.keyCodes().contains(KEY_LEFT_CONTROL);
   }
 
   public void onPointerDown(int x, int y) {
@@ -115,7 +119,7 @@ public class MoveTool implements Tool {
 
   private static final float SNAP_ENTER_DISTANCE = 20f;
   private static final float SNAP_EXIT_DISTANCE = 45f;
-  private static final float SNAP_SWITCH_THRESHOLD = 15f;
+  private static final float SNAP_SWITCH_THRESHOLD = 25f;
   private static final float SNAP_PREVIEW_DISTANCE = 15f;
   private static final float SNAP_INTERSECTION_DISTANCE = 7.5f;
 
@@ -209,7 +213,7 @@ public class MoveTool implements Tool {
                     ? SNAP_ENTER_DISTANCE + SNAP_PREVIEW_DISTANCE
                     : SNAP_EXIT_DISTANCE + SNAP_PREVIEW_DISTANCE);
 
-        if (!closeMatches.isEmpty()) {
+        if (!closeMatches.isEmpty() && snappingEnabled) {
           List<AlignmentLine> comparisonLines =
               closeMatches.stream().map(MoveToolUtils.LineMatch::comparisonLine).toList();
 
@@ -218,7 +222,7 @@ public class MoveTool implements Tool {
           alignmentOverlay.setLines(Collections.emptyList());
         }
 
-        if (activeMatch != null) {
+        if (activeMatch != null && snappingEnabled) {
           activeLayer.setX((int) activeSlidingPosition.x());
 
           activeLayer.setY((int) activeSlidingPosition.y());

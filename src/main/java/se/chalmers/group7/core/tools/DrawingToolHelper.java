@@ -2,12 +2,15 @@ package se.chalmers.group7.core.tools;
 
 import static com.raylib.Colors.BLACK;
 
+import com.raylib.Raylib.Color;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
 
 public class DrawingToolHelper {
   private Canvas canvas;
   private BlendingMode blendingMode;
+  // default color for drawing things is black (including eraser)
+  private Color drawColor = BLACK;
 
   private float radius = 10f;
 
@@ -41,10 +44,15 @@ public class DrawingToolHelper {
     previousY = y;
   }
 
+  public void update(int x, int y, Color col) {
+    drawColor = col;
+    this.update(x, y);
+  }
+
   public void update(int x, int y) {
-    canvas.drawCircle(previousX, previousY, radius, BLACK, BlendingMode.NORMAL);
-    canvas.drawLine(previousX, previousY, x, y, radius * 2.0f, BLACK, BlendingMode.NORMAL);
-    canvas.drawCircle(x, y, radius, BLACK, BlendingMode.NORMAL);
+    canvas.drawCircle(previousX, previousY, radius, drawColor, blendingMode);
+    canvas.drawLine(previousX, previousY, x, y, radius * 2.0f, drawColor, blendingMode);
+    canvas.drawCircle(x, y, radius, drawColor, blendingMode);
 
     previousX = x;
     previousY = y;

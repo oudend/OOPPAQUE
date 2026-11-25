@@ -1,8 +1,10 @@
 package se.chalmers.group7.core.tools;
 
+import static com.raylib.Colors.BLACK;
 import static com.raylib.Raylib.GetFrameTime;
 
 import com.raylib.Raylib;
+import com.raylib.Raylib.Color;
 import java.util.Optional;
 import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
@@ -22,6 +24,7 @@ public class Brush implements Tool {
   private final LayerManager layerManager;
   private final Camera camera;
   private int radius;
+  private Color drawColor = BLACK;
 
   private boolean pointerDown = false;
 
@@ -35,6 +38,10 @@ public class Brush implements Tool {
     this.camera = camera;
     this.radius = radius;
     this.operationManager = operationManager;
+  }
+
+  public void setColor(Color col) {
+    drawColor = col;
   }
 
   @Override
@@ -64,7 +71,7 @@ public class Brush implements Tool {
     helper.setCanvas(strokeCanvas);
     Raylib.Vector2 layerCoords = camera.screenToLayerCoordinates(activeLayer, x, y);
     helper.startDrawing((int) layerCoords.x(), (int) layerCoords.y());
-    helper.update((int) layerCoords.x(), (int) layerCoords.y());
+    helper.update((int) layerCoords.x(), (int) layerCoords.y(), drawColor);
   }
 
   public void onPointerMove(int x, int y) {
@@ -103,6 +110,6 @@ public class Brush implements Tool {
 
   @Override
   public void deactivate() {
-    onPointerUp();
+    // not really handle-able right now
   }
 }

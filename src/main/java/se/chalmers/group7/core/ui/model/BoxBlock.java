@@ -10,7 +10,7 @@ public class BoxBlock extends LayoutBlock {
   List<LayoutBlock> children;
   BoxProperties properties;
 
-  public BoxBlock(BoxProperties properties, int width, int height, int xPos, int yPos) {
+  public BoxBlock(BoxProperties properties, int width, int height) {
     super();
 
     children = new ArrayList<>();
@@ -18,8 +18,6 @@ public class BoxBlock extends LayoutBlock {
     this.width = width;
     this.height = height;
     this.actions = new ArrayList<>();
-    this.xPos = xPos;
-    this.yPos = yPos;
   }
 
   @Override
@@ -42,9 +40,12 @@ public class BoxBlock extends LayoutBlock {
       int right = children.size() - 1;
       int resultIndex = -1;
 
+      List<List<Integer>> childPositions = getChildPositions();
+
       while (left <= right) {
         int middle = left + (right - left) / 2;
-        int childPos = getDirectionPos(children.get(middle));
+        int childPos =
+            childPositions.get(middle).get(properties.getDirection() == Direction.row ? 0 : 1);
 
         if (childPos <= position) {
           resultIndex = middle;
@@ -56,27 +57,51 @@ public class BoxBlock extends LayoutBlock {
 
       if (resultIndex != -1) {
         LayoutBlock child = children.get(resultIndex);
-        child.evaluateInput(input.enterArea(child.getXPos(), child.getYPos()));
+        child.evaluateInput(
+            input.enterArea(
+                childPositions.get(resultIndex).get(0)
+                    + properties.getMarginX()
+                    + properties.getPaddingX()
+                    + properties.getBorderSize(),
+                childPositions.get(resultIndex).get(1)
+                    + properties.getMarginY()
+                    + properties.getPaddingY()
+                    + properties.getBorderSize()));
       }
     }
   }
 
   private int getInputPos(Input input) {
-    if (this.properties.getDirection() == Direction.row) {
-      return input.xPos();
-    } else if (this.properties.getDirection() == Direction.column) {
-      return input.yPos();
+    if (properties.getDirection() == Direction.row) {
+      return input.xPos()
+          - properties.getMarginX()
+          - properties.getBorderSize()
+          - properties.getPaddingX();
+    } else {
+      return input.yPos()
+          - properties.getMarginY()
+          - properties.getBorderSize()
+          - properties.getPaddingY();
     }
-    return -1;
   }
 
-  private int getDirectionPos(LayoutBlock block) {
-    if (this.properties.getDirection() == Direction.row) {
-      return block.getXPos();
-    } else if (this.properties.getDirection() == Direction.column) {
-      return block.getYPos();
+  private List<List<Integer>> getChildPositions() {
+    List<List<Integer>> positions = new ArrayList<>();
+
+    int currentX = 0;
+    int currentY = 0;
+
+    for (LayoutBlock child : children) {
+      positions.add(List.of(currentX, currentY));
+
+      if (properties.getDirection() == Direction.row) {
+        currentX += child.getWidth();
+      } else {
+        currentY += child.getHeight();
+      }
     }
-    return -1;
+
+    return positions;
   }
 
   public void draw(int xPos, int yPos) {

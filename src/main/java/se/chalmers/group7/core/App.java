@@ -40,16 +40,12 @@ public class App {
     BoxBlock canvasBox = new BoxBlock(
         new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
         width / 2,
-        height,
-        0,
-        0);
+        height);
 
     BoxBlock sideBox = new BoxBlock(
         new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
         width / 2,
-        height,
-        0,
-        0);
+        height);
 
     CanvasBlock canvas = new CanvasBlock(width - 40, height - 99);
     canvas.addAction(new ACanvasInput(canvas, debug));

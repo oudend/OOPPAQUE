@@ -12,6 +12,9 @@ public abstract class LayoutBlock implements Actionable {
   protected List<Action> actions;
 
   public void evaluateInput(Input input) {
+    if (actions == null) {
+      return;
+    }
     for (Action a : actions) {
       a.executeAction(input);
     }

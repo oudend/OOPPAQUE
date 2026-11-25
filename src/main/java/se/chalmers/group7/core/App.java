@@ -3,6 +3,9 @@ package se.chalmers.group7.core;
 import static com.raylib.Colors.*;
 import static com.raylib.Raylib.*;
 
+import com.raylib.Raylib.Color;
+import se.chalmers.group7.core.elements.BarSlider.ASliderInput;
+import se.chalmers.group7.core.elements.BarSlider.BarSlider;
 import se.chalmers.group7.core.elements.CanvasBlock.ACanvasInput;
 import se.chalmers.group7.core.elements.CanvasBlock.AChangeColor;
 import se.chalmers.group7.core.elements.CanvasBlock.CanvasBlock;
@@ -37,6 +40,9 @@ public class App {
     BoxBlock rootBox = new BoxBlock(
         new BoxProperties().setColor(DARKGRAY).setDirection(Direction.column), width, height);
 
+    BoxBlock workAreaBox = new BoxBlock(
+        new BoxProperties().setColor(DARKGRAY).setDirection(Direction.row), width, height - 80);
+
     BoxBlock canvasBox = new BoxBlock(
         new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
         width / 2,
@@ -50,21 +56,6 @@ public class App {
     CanvasBlock canvas = new CanvasBlock(width - 40, height - 99);
     canvas.addAction(new ACanvasInput(canvas, debug));
     canvasBox.addChild(canvas);
-
-    // Add slider to sidebar
-    Slider slider = new Slider(200, 50, 50, 5, 0, 1, 0);
-
-    sideBox.addAction(
-        new Action() {
-          @Override
-          public void executeAction(Input input) {
-            if (IsKeyDown(KEY_B)) {
-              rlCheckErrors();
-            }
-          }
-        });
-
-    sideBox.addChild(slider);
 
     BoxBlock colorPalette = new BoxBlock(
         new BoxProperties().setColor(LIGHTGRAY).setBorderColor(BLACK).setPaddingY(12),
@@ -93,9 +84,18 @@ public class App {
       colorPalette.addChild(colorBlock);
     }
 
-    rootBox.addChild(colorPalette);
+    // Add slider to sidebar
+    BarSlider slider = new BarSlider(200, 50, 50, 5, 0, 1, 0);
 
-    rootBox.addChild(canvasBox);
+    slider.addAction(new ASliderInput(slider));
+
+    sideBox.addChild(slider);
+
+    workAreaBox.addChild(sideBox);
+    workAreaBox.addChild(canvasBox);
+
+    rootBox.addChild(colorPalette);
+    rootBox.addChild(workAreaBox);
 
     root = rootBox;
     if (debug) {

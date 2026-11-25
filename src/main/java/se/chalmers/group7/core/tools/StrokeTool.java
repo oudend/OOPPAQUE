@@ -26,9 +26,11 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   private final NumericSetting size;
   private final NumericSetting opacity;
 
+  // Eraser uses a ColorSetting under the hood
+  protected final ColorSetting color;
+
   private boolean pointerDown = false;
   private Canvas strokeCanvas;
-  private Color drawColor;
 
   int previousX = 0;
   int previousY = 0;
@@ -37,12 +39,12 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
       OperationManager operationManager,
       LayerManager layerManager,
       Camera camera,
-      Color drawColor) {
+      Color initialColor) {
     this(
         operationManager,
         layerManager,
         camera,
-        drawColor,
+        new ColorSetting(initialColor),
         new NumericSetting(NumericSettingType.SIZE),
         new NumericSetting(NumericSettingType.OPACITY));
   }
@@ -51,7 +53,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
       OperationManager operationManager,
       LayerManager layerManager,
       Camera camera,
-      Color drawColor,
+      ColorSetting color,
       NumericSetting size,
       NumericSetting opacity) {
     this.operationManager = operationManager;
@@ -59,7 +61,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     this.camera = camera;
     this.size = size;
     this.opacity = opacity;
-    this.drawColor = drawColor;
+    this.color = color;
   }
 
   protected abstract BlendingMode getBlendingMode();
@@ -144,6 +146,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   }
 
   public Raylib.Color getColor() {
+    Color drawColor = this.color.getValue();
     return ColorAlpha(drawColor, opacity.getValue());
   }
 

@@ -1,7 +1,7 @@
 package se.chalmers.group7.core.elements.CanvasBlock;
 
 import com.raylib.Raylib.Color;
-import se.chalmers.group7.core.tools.Brush;
+import se.chalmers.group7.core.tools.ColorAdjustable;
 import se.chalmers.group7.core.ui.model.MouseAction;
 
 public class AChangeColor extends MouseAction {
@@ -16,10 +16,8 @@ public class AChangeColor extends MouseAction {
   @Override
   public void onMouseLeftDown() {
     // Avoid crashing when "changing color" of eraser
-    if (canvas.getToolManager().getActiveTool() instanceof Brush) {
-      // TODO: implement
-      // ((Brush) canvas.getToolManager().getActiveTool()).setColor(this.color);
-      System.out.println("Tyring to change color but not implemented yet");
+    if (canvas.getToolManager().getActiveTool() instanceof ColorAdjustable adjustable) {
+      adjustable.SetColor(this.color);
     }
   }
 }

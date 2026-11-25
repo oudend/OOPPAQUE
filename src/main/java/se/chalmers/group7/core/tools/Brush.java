@@ -6,7 +6,7 @@ import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 
-public class Brush extends StrokeTool {
+public class Brush extends StrokeTool implements ColorAdjustable {
 
   public Brush(
       OperationManager operationManager,
@@ -14,6 +14,14 @@ public class Brush extends StrokeTool {
       Camera camera,
       Color drawColor) {
     super(operationManager, layerManager, camera, drawColor);
+  }
+
+  public void SetColor(Color newColor) {
+    this.color.setColor(newColor);
+  }
+
+  public ColorSetting GetColor() {
+    return this.color;
   }
 
   @Override

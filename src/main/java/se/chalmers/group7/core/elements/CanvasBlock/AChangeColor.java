@@ -17,7 +17,9 @@ public class AChangeColor extends MouseAction {
   public void onMouseLeftDown() {
     // Avoid crashing when "changing color" of eraser
     if (canvas.getToolManager().getActiveTool() instanceof Brush) {
-      ((Brush) canvas.getToolManager().getActiveTool()).setColor(this.color);
+      // TODO: implement
+      // ((Brush) canvas.getToolManager().getActiveTool()).setColor(this.color);
+      System.out.println("Tyring to change color but not implemented yet");
     }
   }
 }

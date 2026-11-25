@@ -153,6 +153,8 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   private void drawStroke(int x, int y) {
     float radius = size.getValue();
 
+    // explicitly uses REPLACE instead of "getBlendingMode()" - otherwise eraser doesn't work
+    //  if you know blending modes and can explain, please explain it better
     strokeCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
     strokeCanvas.drawLine(
         previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);

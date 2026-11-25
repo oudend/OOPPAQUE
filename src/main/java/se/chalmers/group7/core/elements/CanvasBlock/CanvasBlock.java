@@ -51,8 +51,8 @@ public class CanvasBlock extends LayoutBlock {
 
     layerRenderer = new LayerRenderer(layerManager, this.width, this.height);
 
-    toolManager.addTool(new Brush(layerManager, operationManager, camera, 10), "brush");
-    toolManager.addTool(new Eraser(layerManager, operationManager, camera, 10), "eraser");
+    toolManager.addTool(new Brush(operationManager, layerManager, camera, BLACK), "brush");
+    toolManager.addTool(new Eraser(operationManager, layerManager, camera), "eraser");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 
@@ -68,6 +68,24 @@ public class CanvasBlock extends LayoutBlock {
       toolManager.setActive("pan");
     } else if (IsKeyDown(KEY_V)) {
       toolManager.setActive("move");
+    }
+
+    Tool activeTool = toolManager.getActiveTool();
+
+    if (activeTool instanceof Resizable adjustable) {
+      if (IsKeyDown(KEY_UP)) {
+        adjustable.increaseSize(5f);
+      } else if (IsKeyDown(KEY_DOWN)) {
+        adjustable.decreaseSize(5f);
+      }
+    }
+
+    if (activeTool instanceof OpacityAdjustable adjustable) {
+      if (IsKeyDown(KEY_RIGHT)) {
+        adjustable.increaseOpacity(0.05f);
+      } else if (IsKeyDown(KEY_LEFT)) {
+        adjustable.decreaseOpacity(0.05f);
+      }
     }
 
     toolManager.onInput(input);

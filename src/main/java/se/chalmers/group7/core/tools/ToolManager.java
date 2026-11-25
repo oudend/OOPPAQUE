@@ -35,7 +35,7 @@ public class ToolManager {
     return active;
   }
 
-  private Tool getActiveTool() {
+  public Tool getActiveTool() {
     return tools.get(active);
   }
 

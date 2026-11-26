@@ -4,6 +4,7 @@ import static com.raylib.Raylib.GetFrameTime;
 
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
+import se.chalmers.group7.core.tools.settings.ToolSettings;
 import se.chalmers.group7.core.ui.controller.Input;
 
 public class PanningTool implements Tool {
@@ -93,6 +94,11 @@ public class PanningTool implements Tool {
   @Override
   public void deactivate() {
     dragging = false;
+  }
+
+  @Override
+  public ToolSettings getSettings() {
+    return null;
   }
 
   @Override

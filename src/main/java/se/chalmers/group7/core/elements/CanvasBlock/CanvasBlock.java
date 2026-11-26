@@ -14,6 +14,10 @@ import se.chalmers.group7.core.rendering.LayerRenderer;
 import se.chalmers.group7.core.rendering.SquarePatternRenderer;
 import se.chalmers.group7.core.tools.*;
 import se.chalmers.group7.core.tools.move.MoveTool;
+import se.chalmers.group7.core.tools.settings.ToolSettings;
+import se.chalmers.group7.core.tools.stroke.Brush;
+import se.chalmers.group7.core.tools.stroke.CommonStrokeSettings;
+import se.chalmers.group7.core.tools.stroke.Eraser;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.model.LayoutBlock;
 
@@ -52,7 +56,7 @@ public class CanvasBlock extends LayoutBlock {
 
     layerRenderer = new LayerRenderer(layerManager, this.width, this.height);
 
-    toolManager.addTool(new Brush(operationManager, layerManager, camera, BLACK), "brush");
+    toolManager.addTool(new Brush(operationManager, layerManager, camera), "brush");
     toolManager.addTool(new Eraser(operationManager, layerManager, camera), "eraser");
     toolManager.addTool(new PanningTool(camera, operationManager), "pan");
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
@@ -77,20 +81,24 @@ public class CanvasBlock extends LayoutBlock {
 
     Tool activeTool = toolManager.getActiveTool();
 
-    if (activeTool instanceof Resizable adjustable) {
-      if (IsKeyDown(KEY_UP)) {
-        adjustable.increaseSize(5f);
-      } else if (IsKeyDown(KEY_DOWN)) {
-        adjustable.decreaseSize(5f);
-      }
-    }
+    ToolSettings activeToolSettings = activeTool.getSettings();
 
-    if (activeTool instanceof OpacityAdjustable adjustable) {
-      if (IsKeyDown(KEY_RIGHT)) {
-        adjustable.increaseOpacity(0.05f);
-      } else if (IsKeyDown(KEY_LEFT)) {
-        adjustable.decreaseOpacity(0.05f);
-      }
+    if (activeToolSettings != null) {
+      float modifier = GetFrameTime();
+
+      if (IsKeyDown(KEY_UP))
+        activeToolSettings.updateSettingIfExists(
+            CommonStrokeSettings.SIZE, size -> size + 5f * modifier);
+      if (IsKeyDown(KEY_DOWN))
+        activeToolSettings.updateSettingIfExists(
+            CommonStrokeSettings.SIZE, size -> size - 5f * modifier);
+
+      if (IsKeyDown(KEY_RIGHT))
+        activeToolSettings.updateSettingIfExists(
+            CommonStrokeSettings.OPACITY, opacity -> opacity + 0.05f * modifier);
+      if (IsKeyDown(KEY_LEFT))
+        activeToolSettings.updateSettingIfExists(
+            CommonStrokeSettings.OPACITY, opacity -> opacity - 0.05f * modifier);
     }
 
     toolManager.onInput(input);

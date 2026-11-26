@@ -1,12 +1,10 @@
-package se.chalmers.group7.core.tools;
+package se.chalmers.group7.core.tools.stroke;
 
 import static com.raylib.Raylib.ColorAlpha;
 import static com.raylib.Raylib.GetFrameTime;
 
 import com.raylib.Raylib;
-import com.raylib.Raylib.Color;
 import java.util.Optional;
-import se.chalmers.group7.core.canvas.BlendingMode;
 import se.chalmers.group7.core.canvas.Canvas;
 import se.chalmers.group7.core.canvas.RaylibCanvas;
 import se.chalmers.group7.core.layers.Layer;
@@ -16,18 +14,13 @@ import se.chalmers.group7.core.operations.Operation;
 import se.chalmers.group7.core.operations.OperationManager;
 import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerPreview;
+import se.chalmers.group7.core.tools.Tool;
 import se.chalmers.group7.core.ui.controller.Input;
 
-abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
+abstract class GenericBrush implements Tool {
   private final OperationManager operationManager;
   private final LayerManager layerManager;
   private final Camera camera;
-
-  private final NumericSetting size;
-  private final NumericSetting opacity;
-
-  // Eraser uses a ColorSetting under the hood
-  protected final ColorSetting color;
 
   private boolean pointerDown = false;
   private Canvas strokeCanvas;
@@ -35,36 +28,13 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   int previousX = 0;
   int previousY = 0;
 
-  StrokeTool(
-      OperationManager operationManager,
-      LayerManager layerManager,
-      Camera camera,
-      Color initialColor) {
-    this(
-        operationManager,
-        layerManager,
-        camera,
-        new ColorSetting(initialColor),
-        new NumericSetting(NumericSettingType.SIZE),
-        new NumericSetting(NumericSettingType.OPACITY));
-  }
+  protected abstract StrokeParams getStrokeParams();
 
-  StrokeTool(
-      OperationManager operationManager,
-      LayerManager layerManager,
-      Camera camera,
-      ColorSetting color,
-      NumericSetting size,
-      NumericSetting opacity) {
+  GenericBrush(OperationManager operationManager, LayerManager layerManager, Camera camera) {
     this.operationManager = operationManager;
     this.layerManager = layerManager;
     this.camera = camera;
-    this.size = size;
-    this.opacity = opacity;
-    this.color = color;
   }
-
-  protected abstract BlendingMode getBlendingMode();
 
   @Override
   public void onInput(Input input) {
@@ -111,7 +81,9 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
 
     Operation operation =
         new CanvasDrawOperation(
-            layerManager.getActiveCanvas(), getBlendingMode(), strokeCanvas.getTexture());
+            layerManager.getActiveCanvas(),
+            getStrokeParams().drawBlendMode(),
+            strokeCanvas.getTexture());
 
     operationManager.addOperation(operation);
 
@@ -124,7 +96,8 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   public Optional<LayerPreview> getLayerPreview() {
     if (strokeCanvas == null) return Optional.empty();
 
-    return Optional.of(new LayerPreview(strokeCanvas.getTexture(), getBlendingMode()));
+    return Optional.of(
+        new LayerPreview(strokeCanvas.getTexture(), getStrokeParams().drawBlendMode()));
   }
 
   @Override
@@ -135,30 +108,24 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     onPointerUp();
   }
 
-  @Override
-  public NumericSetting getSize() {
-    return this.size;
-  }
-
-  @Override
-  public NumericSetting getOpacity() {
-    return this.opacity;
-  }
-
   public Raylib.Color getRaylibColor() {
-    Color drawColor = this.color.getValue();
-    return ColorAlpha(drawColor, opacity.getValue());
+    return ColorAlpha(getStrokeParams().color(), getStrokeParams().opacity());
   }
 
   private void drawStroke(int x, int y) {
-    float radius = size.getValue();
+    float radius = getStrokeParams().size();
 
-    // explicitly uses REPLACE instead of "getBlendingMode()" - otherwise eraser doesn't work
-    //  if you know blending modes and can explain, please explain it better
-    strokeCanvas.drawCircle(previousX, previousY, radius, getRaylibColor(), BlendingMode.REPLACE);
+    strokeCanvas.drawCircle(
+        previousX, previousY, radius, getRaylibColor(), getStrokeParams().previewBlendMode());
     strokeCanvas.drawLine(
-        previousX, previousY, x, y, radius * 2.0f, getRaylibColor(), BlendingMode.REPLACE);
-    strokeCanvas.drawCircle(x, y, radius, getRaylibColor(), BlendingMode.REPLACE);
+        previousX,
+        previousY,
+        x,
+        y,
+        radius * 2.0f,
+        getRaylibColor(),
+        getStrokeParams().previewBlendMode());
+    strokeCanvas.drawCircle(x, y, radius, getRaylibColor(), getStrokeParams().previewBlendMode());
 
     previousX = x;
     previousY = y;

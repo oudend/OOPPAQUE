@@ -16,6 +16,7 @@ import se.chalmers.group7.core.rendering.overlays.CompositeScreenOverlay;
 import se.chalmers.group7.core.rendering.overlays.LayerGuideRenderer;
 import se.chalmers.group7.core.rendering.overlays.ScreenOverlay;
 import se.chalmers.group7.core.tools.Tool;
+import se.chalmers.group7.core.tools.settings.ToolSettings;
 import se.chalmers.group7.core.ui.controller.Input;
 
 public class MoveTool implements Tool {
@@ -151,6 +152,11 @@ public class MoveTool implements Tool {
   @Override
   public void deactivate() {
     reset();
+  }
+
+  @Override
+  public ToolSettings getSettings() {
+    return null;
   }
 
   private void reset() {

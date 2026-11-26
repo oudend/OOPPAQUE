@@ -22,6 +22,8 @@ public class BarSlider extends LayoutBlock {
   float max = 1;
   float value = min;
 
+  float divide;
+
   Rectangle sliderButton;
 
   public BarSlider(int width, int height, int xPos, int yPos, float min, float max, float value) {
@@ -32,6 +34,7 @@ public class BarSlider extends LayoutBlock {
     this.value = value;
 
     sliderButton = new Rectangle().x(xPos).y(yPos).width(30).height(height);
+    this.divide = (float) (width - (int) sliderButton.width()) / max;
     this.actions = new ArrayList<>();
   }
 
@@ -41,7 +44,7 @@ public class BarSlider extends LayoutBlock {
 
     int width = this.width;
     int height = this.height;
-    int currPos = Math.clamp(topLeftX + addPosX, topLeftX, topLeftX + width - (int) sliderButton.width());
+    int currPos = topLeftX + addPosX;
 
     DrawRectangle(topLeftX, topLeftY, width, height, BLACK);
     DrawRectangleRec(sliderButton.x(currPos).y(topLeftY), WHITE);
@@ -51,7 +54,9 @@ public class BarSlider extends LayoutBlock {
 
   public void moveSliderBar(Input input) {
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      addPosX = (int) input.xPos();
+      addPosX = Math.clamp((int) input.xPos(), topLeftX, topLeftX + width - (int) sliderButton.width());
+      value = (float) addPosX / divide;
+      System.out.println(value);
     }
   }
 

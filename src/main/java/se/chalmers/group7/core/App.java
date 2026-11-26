@@ -91,8 +91,8 @@ public class App {
 
     sideBox.addChild(slider);
 
-    workAreaBox.addChild(sideBox);
     workAreaBox.addChild(canvasBox);
+    workAreaBox.addChild(sideBox);
 
     rootBox.addChild(colorPalette);
     rootBox.addChild(workAreaBox);

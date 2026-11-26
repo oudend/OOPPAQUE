@@ -10,9 +10,9 @@ import se.chalmers.group7.core.layers.LayerTransform;
 import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.rendering.Camera;
 
-class RotationUtils {
+class ResizingUtils {
 
-  private static Raylib.Vector2 snapPointToLayerLines(
+  public static Raylib.Vector2 snapPointToLayerLines(
       Camera camera,
       List<Layer> layers,
       List<AlignmentLine> overlayLines,
@@ -20,6 +20,9 @@ class RotationUtils {
       float screenDistanceThreshold) {
 
     List<AlignmentLine> alignmentLines = AlignmentUtils.fromLayers(layers);
+
+    alignmentLines.addAll(
+        AlignmentUtils.fromRectangle(0, 0, camera.getViewportWidth(), camera.getViewportHeight()));
 
     Raylib.Vector2 screenPoint = camera.worldToScreen(point.x(), point.y());
 
@@ -52,8 +55,6 @@ class RotationUtils {
         Raylib.Vector2Distance(
             screenPoint, camera.worldToScreen(closestVerticalPoint.x(), closestVerticalPoint.y()));
 
-    //    overlayLines.ad
-
     Raylib.Vector2 closestPoint =
         horizontalDistance < verticalDistance ? closestHorizontalPoint : closestVerticalPoint;
     float closestDistance = Math.min(horizontalDistance, verticalDistance);
@@ -78,19 +79,18 @@ class RotationUtils {
       List<Layer> layers,
       LayerTransform initialTransform,
       LayerUtils.Handle activeHandle,
-      List<AlignmentLine> overlayLines,
-      int mouseX,
-      int mouseY) {
-    Raylib.Vector2 mouseWorld = camera.screenToWorld(mouseX, mouseY);
+      //          List<AlignmentLine> overlayLines,
+      Raylib.Vector2 mouseWorld) {
+    //    Raylib.Vector2 mouseWorld = camera.screenToWorld(mouseX, mouseY);
     Raylib.Vector2 handleWorld = activeHandle.worldCoords();
 
-    mouseWorld =
-        snapPointToLayerLines(
-            camera,
-            layers.stream().filter(l -> l != layer).toList(),
-            overlayLines,
-            mouseWorld,
-            10f);
+    //    mouseWorld =
+    //        snapPointToLayerLines(
+    //            camera,
+    //            layers.stream().filter(l -> l != layer).toList(),
+    //            overlayLines,
+    //            mouseWorld,
+    //            10f);
 
     float initX = initialTransform.x();
     float initY = initialTransform.y();

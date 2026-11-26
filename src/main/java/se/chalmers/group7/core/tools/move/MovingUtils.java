@@ -9,11 +9,10 @@ import java.util.stream.Stream;
 import se.chalmers.group7.core.alignment.AlignmentLine;
 import se.chalmers.group7.core.alignment.AlignmentLineType;
 import se.chalmers.group7.core.layers.Layer;
-import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerUtils;
 import se.chalmers.group7.core.rendering.Camera;
 
-class MoveAlignmentUtils {
+class MovingUtils {
   record MainLine(Layer layer, int index, float angle) {
     public AlignmentLine alignmentLine(Vector2 mouseIdeal) {
 
@@ -88,10 +87,7 @@ class MoveAlignmentUtils {
   }
 
   public static List<LineMatch> findCloseMatches(
-      Camera camera,
-      List<MoveAlignmentUtils.LineMatch> matches,
-      Vector2 mouseIdeal,
-      float minDistance) {
+      Camera camera, List<MovingUtils.LineMatch> matches, Vector2 mouseIdeal, float minDistance) {
 
     return matches.stream()
         .filter(match -> {
@@ -156,25 +152,6 @@ class MoveAlignmentUtils {
     Vector2 slidingScreen = camera.worldToScreen(slidingPosition.x(), slidingPosition.y());
 
     return Vector2Distance(mouseScreen, slidingScreen);
-  }
-
-  public static List<LineMatch> getAllAlignmentMatches(
-      Camera camera, LayerManager layerManager, Vector2 mouseIdeal) {
-    List<Layer> comparisonLayers = new ArrayList<>(layerManager.getLayers());
-    comparisonLayers.remove(layerManager.getActiveLayerIndex());
-
-    List<AlignmentLine> comparisonLines =
-        se.chalmers.group7.core.alignment.AlignmentUtils.fromLayers(comparisonLayers);
-
-    List<AlignmentLine> workspaceLines =
-        se.chalmers.group7.core.alignment.AlignmentUtils.fromRectangle(
-            0, 0, camera.getViewportWidth(), camera.getViewportHeight());
-
-    comparisonLines.addAll(workspaceLines);
-
-    Layer activeLayer = layerManager.getActiveLayer();
-
-    return MoveAlignmentUtils.getAllAlignmentMatches(activeLayer, comparisonLines, mouseIdeal);
   }
 
   public static List<LineMatch> getAllAlignmentMatches(

@@ -5,7 +5,6 @@ import static com.raylib.Raylib.*;
 import com.raylib.Raylib;
 import java.util.*;
 import se.chalmers.group7.core.alignment.AlignmentGuideRenderer;
-import se.chalmers.group7.core.alignment.AlignmentLine;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerTransform;
@@ -32,13 +31,10 @@ public class MoveTool implements Tool {
 
   private int activeLayerIndex = -1;
   private TransformType transformType;
-
   private LayerTransform initialTransform;
 
-  private LayerUtils.Handle activeHandle;
-
-  private Vector2 dragStartPosition;
-  private Vector2 dragStartMouseWorld;
+  private final ResizingHelper resizingHelper = new ResizingHelper();
+  private final MovingHelper movingHelper = new MovingHelper();
 
   private final LayerGuideRenderer guideOverlay;
   private final AlignmentGuideRenderer alignmentOverlay;
@@ -86,10 +82,7 @@ public class MoveTool implements Tool {
 
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
-    dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
-
-    dragStartPosition = new Vector2().x(activeLayer.getX()).y(activeLayer.getY());
-    dragStartMouseWorld = worldVector;
+    movingHelper.selectLayer(camera, activeLayer, x, y);
 
     LayerUtils.Handle nearestHandle =
         LayerUtils.getNearestHandle(activeLayer, camera, worldVector.x(), worldVector.y());
@@ -113,158 +106,27 @@ public class MoveTool implements Tool {
       }
     }
 
-    if (transformType != TransformType.MOVE) activeHandle = nearestHandle;
+    resizingHelper.selectLayer(activeLayer, nearestHandle);
+
     initialTransform = activeLayer.getLayerTransform();
   }
-
-  private static final float SNAP_ENTER_DISTANCE = 20f;
-  private static final float SNAP_EXIT_DISTANCE = 45f;
-  private static final float SNAP_SWITCH_THRESHOLD = 25f;
-  private static final float SNAP_PREVIEW_DISTANCE = 15f;
-  private static final float SNAP_INTERSECTION_DISTANCE = 7.5f;
-
-  private static final float SNAP_ANGLE_DEGREES = 90f;
-  private static final float SNAP_ANGLE_THRESHOLD = 10f;
-
-  private MoveAlignmentUtils.LineMatch activeMatch;
 
   public void onPointerMove(int x, int y) {
     if (activeLayerIndex == -1) return;
 
-    Raylib.Vector2 worldVector = camera.screenToWorld(x, y);
-
-    Layer activeLayer = layerManager.getLayer(activeLayerIndex);
-
-    List<AlignmentLine> overlayLines = new ArrayList<>();
-
     switch (transformType) {
       case MOVE:
-        Raylib.Vector2 mouseDelta = Vector2Subtract(worldVector, dragStartMouseWorld);
-        Raylib.Vector2 mouseIdeal = Vector2Add(dragStartPosition, mouseDelta);
-
-        List<MoveAlignmentUtils.LineMatch> matches =
-            MoveAlignmentUtils.getAllAlignmentMatches(camera, layerManager, mouseIdeal);
-
-        MoveAlignmentUtils.AlignedLineMatches alignedLineMatches =
-            MoveAlignmentUtils.alignedLineMatches(camera, matches, mouseIdeal);
-
-        MoveAlignmentUtils.LineMatch closestMatch = alignedLineMatches.closest();
-
-        MoveAlignmentUtils.LineMatch oppositeClosestMatch = alignedLineMatches.other();
-
-        Float activeScreenDistance = null;
-        Vector2 activeSlidingPosition = null;
-
-        if (activeMatch != null) {
-          activeSlidingPosition = MoveAlignmentUtils.getSlidingPosition(mouseIdeal, activeMatch);
-
-          activeScreenDistance =
-              Vector2Distance(
-                  camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
-                  camera.worldToScreen(activeSlidingPosition.x(), activeSlidingPosition.y()));
-        }
-
-        Vector2 closestSlidingPosition =
-            MoveAlignmentUtils.getSlidingPosition(mouseIdeal, closestMatch);
-
-        float closestScreenDistance =
-            Vector2Distance(
-                camera.worldToScreen(mouseIdeal.x(), mouseIdeal.y()),
-                camera.worldToScreen(closestSlidingPosition.x(), closestSlidingPosition.y()));
-
-        if (activeMatch != null) {
-          if (activeScreenDistance > SNAP_EXIT_DISTANCE) {
-            activeMatch = null;
-          }
-        }
-        if (activeMatch == null) {
-          if (closestScreenDistance < SNAP_ENTER_DISTANCE) {
-            activeMatch = closestMatch;
-            activeSlidingPosition = closestSlidingPosition;
-          }
-        } else if (activeMatch != closestMatch
-            && closestScreenDistance < activeScreenDistance - SNAP_SWITCH_THRESHOLD) {
-          activeMatch = closestMatch;
-          activeSlidingPosition = closestSlidingPosition;
-        }
-
-        if (activeMatch != null) {
-          MoveAlignmentUtils.LineMatch oppositeActiveMatch =
-              activeMatch.type() == closestMatch.type() ? oppositeClosestMatch : closestMatch;
-
-          Vector2 intersectionPosition =
-              MoveAlignmentUtils.getIntersectionPosition(
-                  new Vector2().x(activeSlidingPosition.x()).y(activeSlidingPosition.y()),
-                  activeMatch,
-                  oppositeActiveMatch);
-
-          float intersectionScreenDistance =
-              Vector2Distance(
-                  camera.worldToScreen(activeSlidingPosition.x(), activeSlidingPosition.y()),
-                  camera.worldToScreen(intersectionPosition.x(), intersectionPosition.y()));
-
-          if (intersectionScreenDistance < SNAP_INTERSECTION_DISTANCE)
-            activeSlidingPosition = intersectionPosition;
-        }
-
-        List<MoveAlignmentUtils.LineMatch> closeMatches =
-            MoveAlignmentUtils.findCloseMatches(
-                camera,
-                matches,
-                mouseIdeal,
-                activeMatch == null
-                    ? SNAP_ENTER_DISTANCE + SNAP_PREVIEW_DISTANCE
-                    : SNAP_EXIT_DISTANCE + SNAP_PREVIEW_DISTANCE);
-
-        if (!closeMatches.isEmpty() && snappingEnabled) {
-          List<AlignmentLine> comparisonLines =
-              closeMatches.stream().map(MoveAlignmentUtils.LineMatch::comparisonLine).toList();
-
-          overlayLines.addAll(comparisonLines);
-        }
-
-        if (activeMatch != null && snappingEnabled) {
-          activeLayer.setX((int) activeSlidingPosition.x());
-
-          activeLayer.setY((int) activeSlidingPosition.y());
-          break;
-        }
-
-        activeLayer.setX((int) mouseIdeal.x());
-
-        activeLayer.setY((int) mouseIdeal.y());
+        movingHelper.move(camera, layerManager.getLayers(), x, y, snappingEnabled);
+        alignmentOverlay.setLines(movingHelper.getOverlayLines());
         break;
       case RESIZE:
-        RotationUtils.resizeLayer(
-            camera,
-            activeLayer,
-            layerManager.getLayers(),
-            initialTransform,
-            activeHandle,
-            overlayLines,
-            x,
-            y);
+        resizingHelper.resize(camera, layerManager.getLayers(), x, y);
+        alignmentOverlay.setLines(resizingHelper.getOverlayLines());
         break;
       case ROTATE:
-        float centerX = activeLayer.getX() + activeLayer.getWidth() / 2f;
-        float centerY = activeLayer.getY() + activeLayer.getHeight() / 2f;
-
-        Raylib.Vector2 mouseWorld = camera.screenToWorld(x, y);
-
-        float targetAngle =
-            (float) Math.toDegrees(Math.atan2(mouseWorld.y() - centerY, mouseWorld.x() - centerX))
-                + 90f;
-
-        float closestSnapAngle = Math.round(targetAngle / SNAP_ANGLE_DEGREES) * SNAP_ANGLE_DEGREES;
-
-        if (Math.abs(closestSnapAngle - targetAngle) < SNAP_ANGLE_THRESHOLD)
-          targetAngle = closestSnapAngle;
-
-        activeLayer.setRotation(targetAngle);
+        RotationHelper.rotate(camera, layerManager.getActiveLayer(), x, y);
         break;
     }
-
-    alignmentOverlay.setLines(overlayLines);
   }
 
   public void onPointerUp() {
@@ -293,7 +155,6 @@ public class MoveTool implements Tool {
 
   private void reset() {
     transformType = null;
-    activeHandle = null;
     activeLayerIndex = -1;
   }
 

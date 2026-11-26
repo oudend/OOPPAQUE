@@ -135,6 +135,8 @@ public class MoveTool implements Tool {
 
     Layer activeLayer = layerManager.getLayer(activeLayerIndex);
 
+    List<AlignmentLine> overlayLines = new ArrayList<>();
+
     switch (transformType) {
       case MOVE:
         Raylib.Vector2 mouseDelta = Vector2Subtract(worldVector, dragStartMouseWorld);
@@ -218,9 +220,7 @@ public class MoveTool implements Tool {
           List<AlignmentLine> comparisonLines =
               closeMatches.stream().map(MoveAlignmentUtils.LineMatch::comparisonLine).toList();
 
-          alignmentOverlay.setLines(comparisonLines);
-        } else {
-          alignmentOverlay.setLines(Collections.emptyList());
+          overlayLines.addAll(comparisonLines);
         }
 
         if (activeMatch != null && snappingEnabled) {
@@ -236,7 +236,14 @@ public class MoveTool implements Tool {
         break;
       case RESIZE:
         RotationUtils.resizeLayer(
-            camera, activeLayer, layerManager.getLayers(), initialTransform, activeHandle, x, y);
+            camera,
+            activeLayer,
+            layerManager.getLayers(),
+            initialTransform,
+            activeHandle,
+            overlayLines,
+            x,
+            y);
         break;
       case ROTATE:
         float centerX = activeLayer.getX() + activeLayer.getWidth() / 2f;
@@ -256,6 +263,8 @@ public class MoveTool implements Tool {
         activeLayer.setRotation(targetAngle);
         break;
     }
+
+    alignmentOverlay.setLines(overlayLines);
   }
 
   public void onPointerUp() {

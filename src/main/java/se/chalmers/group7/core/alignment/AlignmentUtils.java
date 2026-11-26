@@ -37,23 +37,23 @@ public class AlignmentUtils {
     return lines;
   }
 
-  public static Raylib.Vector2 closestPointOnLines(
-      Raylib.Vector2 point, List<AlignmentLine> lines) {
+  public static AlignmentLine closestLine(Raylib.Vector2 point, List<AlignmentLine> lines) {
     float closestScreenDistance = 0f;
-    Raylib.Vector2 closestPoint = null;
+    //    Raylib.Vector2 closestPoint = null;
+    AlignmentLine closestLine = null;
 
     for (AlignmentLine alignmentLine : lines) {
       Raylib.Vector2 p = AlignmentUtils.closestPointOnLine(point, alignmentLine);
 
       float screenDistance = Raylib.Vector2Distance(p, point);
 
-      if (closestPoint == null || screenDistance < closestScreenDistance) {
-        closestPoint = p;
+      if (closestLine == null || screenDistance < closestScreenDistance) {
+        closestLine = alignmentLine;
         closestScreenDistance = screenDistance;
       }
     }
 
-    return closestPoint != null ? closestPoint : point;
+    return closestLine;
   }
 
   public static Raylib.Vector2 closestPointOnLine(Raylib.Vector2 point, AlignmentLine line) {

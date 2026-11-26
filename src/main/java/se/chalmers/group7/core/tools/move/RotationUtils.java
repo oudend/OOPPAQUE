@@ -13,24 +13,36 @@ import se.chalmers.group7.core.rendering.Camera;
 class RotationUtils {
 
   private static Raylib.Vector2 snapPointToLayerLines(
-      Camera camera, List<Layer> layers, Raylib.Vector2 point, float screenDistanceThreshold) {
+      Camera camera,
+      List<Layer> layers,
+      List<AlignmentLine> overlayLines,
+      Raylib.Vector2 point,
+      float screenDistanceThreshold) {
 
     List<AlignmentLine> alignmentLines = AlignmentUtils.fromLayers(layers);
 
     Raylib.Vector2 screenPoint = camera.worldToScreen(point.x(), point.y());
 
-    Raylib.Vector2 closestHorizontalPoint =
-        AlignmentUtils.closestPointOnLines(
+    AlignmentLine closestHorizontalLine =
+        AlignmentUtils.closestLine(
             point,
             alignmentLines.stream()
                 .filter(match -> match.type() == AlignmentLineType.HORIZONTAL)
                 .toList());
-    Raylib.Vector2 closestVerticalPoint =
-        AlignmentUtils.closestPointOnLines(
+    AlignmentLine closestVerticalLine =
+        AlignmentUtils.closestLine(
             point,
             alignmentLines.stream()
                 .filter(match -> match.type() == AlignmentLineType.VERTICAL)
                 .toList());
+
+    Raylib.Vector2 closestHorizontalPoint =
+        AlignmentUtils.closestPointOnLine(point, closestHorizontalLine);
+    Raylib.Vector2 closestVerticalPoint =
+        AlignmentUtils.closestPointOnLine(point, closestVerticalLine);
+
+    overlayLines.add(closestHorizontalLine);
+    overlayLines.add(closestVerticalLine);
 
     float horizontalDistance =
         Raylib.Vector2Distance(
@@ -39,6 +51,8 @@ class RotationUtils {
     float verticalDistance =
         Raylib.Vector2Distance(
             screenPoint, camera.worldToScreen(closestVerticalPoint.x(), closestVerticalPoint.y()));
+
+    //    overlayLines.ad
 
     Raylib.Vector2 closestPoint =
         horizontalDistance < verticalDistance ? closestHorizontalPoint : closestVerticalPoint;
@@ -64,6 +78,7 @@ class RotationUtils {
       List<Layer> layers,
       LayerTransform initialTransform,
       LayerUtils.Handle activeHandle,
+      List<AlignmentLine> overlayLines,
       int mouseX,
       int mouseY) {
     Raylib.Vector2 mouseWorld = camera.screenToWorld(mouseX, mouseY);
@@ -71,7 +86,11 @@ class RotationUtils {
 
     mouseWorld =
         snapPointToLayerLines(
-            camera, layers.stream().filter(l -> l != layer).toList(), mouseWorld, 10f);
+            camera,
+            layers.stream().filter(l -> l != layer).toList(),
+            overlayLines,
+            mouseWorld,
+            10f);
 
     float initX = initialTransform.x();
     float initY = initialTransform.y();

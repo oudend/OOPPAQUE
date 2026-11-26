@@ -35,7 +35,8 @@ public class ToolManager {
     return active;
   }
 
-  private Tool getActiveTool() {
+  // TODO: very very temporary change below
+  public Tool getActiveTool() {
     return tools.get(active);
   }
 

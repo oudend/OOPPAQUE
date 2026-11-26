@@ -120,7 +120,7 @@ public class MoveTool implements Tool {
         alignmentOverlay.setLines(movingHelper.getOverlayLines());
         break;
       case RESIZE:
-        resizingHelper.resize(camera, layerManager.getLayers(), x, y);
+        resizingHelper.resize(camera, layerManager.getLayers(), x, y, snappingEnabled);
         alignmentOverlay.setLines(resizingHelper.getOverlayLines());
         break;
       case ROTATE:

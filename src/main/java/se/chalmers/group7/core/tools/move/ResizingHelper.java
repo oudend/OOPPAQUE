@@ -24,18 +24,19 @@ class ResizingHelper {
     initialTransform = activeLayer.getLayerTransform();
   }
 
-  void resize(Camera camera, List<Layer> layers, int x, int y) {
+  void resize(Camera camera, List<Layer> layers, int x, int y, boolean snappingEnabled) {
     overlayLines.clear();
 
     Raylib.Vector2 mouseWorld = camera.screenToWorld(x, y);
 
-    mouseWorld =
-        snapPointToLayerLines(
-            camera,
-            layers.stream().filter(l -> l != activeLayer).toList(),
-            overlayLines,
-            mouseWorld,
-            10f);
+    if (snappingEnabled)
+      mouseWorld =
+          snapPointToLayerLines(
+              camera,
+              layers.stream().filter(l -> l != activeLayer).toList(),
+              overlayLines,
+              mouseWorld,
+              10f);
 
     ResizingUtils.resizeLayer(
         camera, activeLayer, layers, initialTransform, activeHandle, mouseWorld);

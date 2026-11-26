@@ -1,6 +1,7 @@
 package se.chalmers.group7.core.layers;
 
 import com.raylib.Raylib;
+import java.util.List;
 import se.chalmers.group7.core.rendering.Camera;
 
 public class LayerUtils {
@@ -60,5 +61,48 @@ public class LayerUtils {
     }
 
     return handles[closestIndex];
+  }
+
+  public static int layerIntersection(List<Layer> layers, Camera camera, int screenX, int screenY) {
+    Raylib.Vector2 worldVector = camera.screenToWorld(screenX, screenY);
+
+    for (int i = 0; i < layers.size(); i++) {
+      Layer layer = layers.get(i);
+
+      boolean intersects =
+          (worldVector.x() >= layer.getX() && worldVector.x() <= layer.getX() + layer.getWidth())
+              && (worldVector.y() >= layer.getY()
+                  && worldVector.y() <= layer.getY() + layer.getHeight());
+
+      if (intersects) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  public record BoundingBox(float x, float y, float width, float height) {}
+
+  public static BoundingBox getBoundingBox(Layer layer) {
+    return getBoundingBox(
+        layer.getX(), layer.getY(), layer.getWidth(), layer.getHeight(), layer.getRotation());
+  }
+
+  public static BoundingBox getBoundingBox(
+      float x, float y, float width, float height, float rotation) {
+    double angle = Math.toRadians(rotation);
+
+    double cos = Math.abs(Math.cos(angle));
+    double sin = Math.abs(Math.sin(angle));
+
+    double boundingWidth = width * cos + height * sin;
+    double boundingHeight = width * sin + height * cos;
+
+    double boundingX = x + (width - boundingWidth) / 2.0;
+    double boundingY = y + (height - boundingHeight) / 2.0;
+
+    return new BoundingBox(
+        (float) boundingX, (float) boundingY, (float) boundingWidth, (float) boundingHeight);
   }
 }

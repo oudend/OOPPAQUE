@@ -1,4 +1,4 @@
-package se.chalmers.group7.core.rendering;
+package se.chalmers.group7.core.rendering.overlays;
 
 import static com.raylib.Colors.*;
 
@@ -6,6 +6,7 @@ import com.raylib.Raylib;
 import se.chalmers.group7.core.layers.Layer;
 import se.chalmers.group7.core.layers.LayerManager;
 import se.chalmers.group7.core.layers.LayerUtils;
+import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.utils.RaylibUtils;
 
 public class LayerGuideRenderer implements ScreenOverlay {
@@ -16,6 +17,8 @@ public class LayerGuideRenderer implements ScreenOverlay {
   }
 
   public void render(Camera camera) {
+    if (layerManager.getLayerCount() == 0) return;
+
     for (int i = 0; i < layerManager.getLayerCount(); i++) {
       Layer layer = layerManager.getLayer(i);
 
@@ -44,6 +47,20 @@ public class LayerGuideRenderer implements ScreenOverlay {
             .height(height);
 
     RaylibUtils.DrawRectangleLinesPro(destination, origin, layer.getRotation(), 2f, BLUE);
+
+    LayerUtils.BoundingBox mainBox = LayerUtils.getBoundingBox(layer);
+
+    Raylib.Vector2 screenBoxPosition = camera.worldToScreen(mainBox.x(), mainBox.y());
+
+    Raylib.Rectangle boxDestination =
+        new Raylib.Rectangle()
+            .x(screenBoxPosition.x() + origin.x())
+            .y(screenBoxPosition.y() + origin.y())
+            .width(mainBox.width() * zoom)
+            .height(mainBox.height() * zoom);
+
+    RaylibUtils.DrawRectangleLinesPro(
+        boxDestination, origin, 0f, 1f, Raylib.ColorAlpha(BLUE, 0.25f));
 
     if (renderHandles) renderLayerHandles(camera, layer);
   }

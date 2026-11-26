@@ -13,6 +13,7 @@ import se.chalmers.group7.core.rendering.Camera;
 import se.chalmers.group7.core.rendering.LayerRenderer;
 import se.chalmers.group7.core.rendering.SquarePatternRenderer;
 import se.chalmers.group7.core.tools.*;
+import se.chalmers.group7.core.tools.move.MoveTool;
 import se.chalmers.group7.core.ui.controller.Input;
 import se.chalmers.group7.core.ui.model.LayoutBlock;
 
@@ -26,12 +27,14 @@ public class CanvasBlock extends LayoutBlock {
 
   private final LayerRenderer layerRenderer;
 
-  private final Camera camera = new Camera();
+  private final Camera camera;
 
   private final SquarePatternRenderer transparencyPatternRenderer;
 
   public CanvasBlock(int width, int height) {
     this.actions = new ArrayList<>();
+
+    camera = new Camera(width, height);
 
     this.width = width;
     this.height = height;

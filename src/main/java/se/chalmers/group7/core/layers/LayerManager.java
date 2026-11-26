@@ -24,7 +24,7 @@ public class LayerManager {
   }
 
   public List<Layer> getLayers() {
-    return layers;
+    return List.copyOf(layers);
   }
 
   public void swapLayers(int i, int j) {

@@ -15,8 +15,8 @@ public record Input(
     mouseButton mouseMiddle) {
   public Input enterArea(int x, int y) {
     return new Input(
-        this.globalX - x,
-        this.globalY - y,
+        this.xPos - x,
+        this.yPos - y,
         globalX,
         globalY,
         keyCodes,

@@ -26,9 +26,11 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
   private final NumericSetting size;
   private final NumericSetting opacity;
 
+  // Eraser uses a ColorSetting under the hood
+  protected final ColorSetting color;
+
   private boolean pointerDown = false;
   private Canvas strokeCanvas;
-  private Color drawColor;
 
   int previousX = 0;
   int previousY = 0;
@@ -37,12 +39,12 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
       OperationManager operationManager,
       LayerManager layerManager,
       Camera camera,
-      Color drawColor) {
+      Color initialColor) {
     this(
         operationManager,
         layerManager,
         camera,
-        drawColor,
+        new ColorSetting(initialColor),
         new NumericSetting(NumericSettingType.SIZE),
         new NumericSetting(NumericSettingType.OPACITY));
   }
@@ -51,7 +53,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
       OperationManager operationManager,
       LayerManager layerManager,
       Camera camera,
-      Color drawColor,
+      ColorSetting color,
       NumericSetting size,
       NumericSetting opacity) {
     this.operationManager = operationManager;
@@ -59,7 +61,7 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     this.camera = camera;
     this.size = size;
     this.opacity = opacity;
-    this.drawColor = drawColor;
+    this.color = color;
   }
 
   protected abstract BlendingMode getBlendingMode();
@@ -143,17 +145,20 @@ abstract class StrokeTool implements Tool, Resizable, OpacityAdjustable {
     return this.opacity;
   }
 
-  public Raylib.Color getColor() {
+  public Raylib.Color getRaylibColor() {
+    Color drawColor = this.color.getValue();
     return ColorAlpha(drawColor, opacity.getValue());
   }
 
   private void drawStroke(int x, int y) {
     float radius = size.getValue();
 
-    strokeCanvas.drawCircle(previousX, previousY, radius, getColor(), BlendingMode.REPLACE);
+    // explicitly uses REPLACE instead of "getBlendingMode()" - otherwise eraser doesn't work
+    //  if you know blending modes and can explain, please explain it better
+    strokeCanvas.drawCircle(previousX, previousY, radius, getRaylibColor(), BlendingMode.REPLACE);
     strokeCanvas.drawLine(
-        previousX, previousY, x, y, radius * 2.0f, getColor(), BlendingMode.REPLACE);
-    strokeCanvas.drawCircle(x, y, radius, getColor(), BlendingMode.REPLACE);
+        previousX, previousY, x, y, radius * 2.0f, getRaylibColor(), BlendingMode.REPLACE);
+    strokeCanvas.drawCircle(x, y, radius, getRaylibColor(), BlendingMode.REPLACE);
 
     previousX = x;
     previousY = y;

@@ -30,13 +30,11 @@ public class CanvasBlock extends LayoutBlock {
 
   private final SquarePatternRenderer transparencyPatternRenderer;
 
-  public CanvasBlock(int width, int height, int xPos, int yPos) {
+  public CanvasBlock(int width, int height) {
     this.actions = new ArrayList<>();
 
     this.width = width;
     this.height = height;
-    this.xPos = xPos;
-    this.yPos = yPos;
 
     layerManager = new LayerManager();
 
@@ -57,6 +55,10 @@ public class CanvasBlock extends LayoutBlock {
     toolManager.addTool(new MoveTool(layerManager, operationManager, camera), "move");
 
     compositeTexture = LoadRenderTexture(width, height);
+  }
+
+  public ToolManager getToolManager() {
+    return toolManager;
   }
 
   public void onInput(Input input) {

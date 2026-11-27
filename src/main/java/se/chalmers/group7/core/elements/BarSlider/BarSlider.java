@@ -54,10 +54,10 @@ public class BarSlider extends LayoutBlock {
 
   public void moveSliderBar(Input input) {
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      addPosX = Math.clamp((int) input.xPos(), topLeftX, topLeftX + width - (int) sliderButton.width());
+      addPosX =
+          Math.clamp((int) input.xPos(), topLeftX, topLeftX + width - (int) sliderButton.width());
       value = (float) addPosX / divide;
       System.out.println(value);
     }
   }
-
 }

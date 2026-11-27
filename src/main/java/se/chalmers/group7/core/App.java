@@ -37,47 +37,53 @@ public class App {
   }
 
   private void initializeLayout() {
-    BoxBlock rootBox = new BoxBlock(
-        new BoxProperties().setColor(DARKGRAY).setDirection(Direction.column), width, height);
+    BoxBlock rootBox =
+        new BoxBlock(
+            new BoxProperties().setColor(DARKGRAY).setDirection(Direction.column), width, height);
 
-    BoxBlock workAreaBox = new BoxBlock(
-        new BoxProperties().setColor(DARKGRAY).setDirection(Direction.row), width, height - 80);
+    BoxBlock workAreaBox =
+        new BoxBlock(
+            new BoxProperties().setColor(DARKGRAY).setDirection(Direction.row), width, height - 80);
 
-    BoxBlock canvasBox = new BoxBlock(
-        new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
-        width / 2,
-        height);
+    BoxBlock canvasBox =
+        new BoxBlock(
+            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+            width / 2,
+            height);
 
-    BoxBlock sideBox = new BoxBlock(
-        new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
-        width / 2,
-        height);
+    BoxBlock sideBox =
+        new BoxBlock(
+            new BoxProperties().setBorderSize(5).setBorderColor(GRAY).setMarginY(15).setMarginX(15),
+            width / 2,
+            height);
 
     CanvasBlock canvas = new CanvasBlock(width - 40, height - 99);
     canvas.addAction(new ACanvasInput(canvas, debug));
     canvasBox.addChild(canvas);
 
-    BoxBlock colorPalette = new BoxBlock(
-        new BoxProperties().setColor(LIGHTGRAY).setBorderColor(BLACK).setPaddingY(12),
-        width,
-        59);
+    BoxBlock colorPalette =
+        new BoxBlock(
+            new BoxProperties().setColor(LIGHTGRAY).setBorderColor(BLACK).setPaddingY(12),
+            width,
+            59);
 
     Color[] colors = {
-        BLACK, WHITE, RED, GREEN, BLUE, YELLOW, DARKBLUE, DARKGREEN, PURPLE, PINK, ORANGE, BROWN,
-        DARKBROWN, RAYWHITE, LIGHTGRAY, GRAY, DARKGRAY
+      BLACK, WHITE, RED, GREEN, BLUE, YELLOW, DARKBLUE, DARKGREEN, PURPLE, PINK, ORANGE, BROWN,
+      DARKBROWN, RAYWHITE, LIGHTGRAY, GRAY, DARKGRAY
     };
     // trust the process
     int colorBlockSize = 35;
     int colorSpacing = (width - (colorBlockSize * colors.length)) / (2 * (colors.length - 1));
     for (Color color : colors) {
-      LayoutBlock colorBlock = new BoxBlock(
-          new BoxProperties()
-              .setColor(color)
-              .setBorderColor(BLACK)
-              .setBorderSize(5)
-              .setMarginX(colorSpacing),
-          colorBlockSize + 2 * colorSpacing,
-          colorBlockSize);
+      LayoutBlock colorBlock =
+          new BoxBlock(
+              new BoxProperties()
+                  .setColor(color)
+                  .setBorderColor(BLACK)
+                  .setBorderSize(5)
+                  .setMarginX(colorSpacing),
+              colorBlockSize + 2 * colorSpacing,
+              colorBlockSize);
 
       colorBlock.addAction(new AChangeColor(canvas, color));
 
